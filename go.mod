@@ -1,6 +1,6 @@
 module github.com/Shemistan/grpc_user_api
 
-go 1.20.1
+go 1.20
 
 require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible

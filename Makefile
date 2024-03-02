@@ -45,7 +45,7 @@ copy-to-server:
 
 docker-build-and-push:
 	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/shemistan/user_server:v0.0.1 .
-	docker login -u token -p CRgAAAAA669cs4qWBBpC1rjlaYu3JZ5tV0e87G1I cr.selcloud.ru/shemistan
+	docker login -u token -p CRgAAAAAjTdjdvRGRYaRvh917eupu-D6sdlytTts cr.selcloud.ru/shemistan
 	docker push cr.selcloud.ru/shemistan/user_server:v0.0.1
 
 

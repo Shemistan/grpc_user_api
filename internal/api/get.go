@@ -13,7 +13,7 @@ import (
 func (u *User) Get(_ context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
 	return &pb.GetResponse{
 		Id:        req.GetId(),
-		Name:      gofakeit.Name(),
+		Name:      u.Secret,
 		Email:     gofakeit.Email(),
 		Role:      0,
 		CreatedAt: &timestamppb.Timestamp{},

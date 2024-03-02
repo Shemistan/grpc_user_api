@@ -59,7 +59,9 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	pb.RegisterUserV1Server(s, &api.User{})
+	pb.RegisterUserV1Server(s, &api.User{
+		Secret: secrConf.Secret(),
+	})
 
 	log.Println("server listening at:", lis.Addr(), "secret: ", secrConf.Secret())
 

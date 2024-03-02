@@ -6,5 +6,6 @@ import (
 
 // User - структура реализующая методы АПИ
 type User struct {
+	Secret string
 	pb.UnimplementedUserV1Server
 }

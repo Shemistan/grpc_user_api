@@ -11,7 +11,7 @@ lint:
 install-deps:
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
 	GOBIN=$(LOCAL_BIN) go install -mod=mod google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
-
+	GOBIN=$(LOCAL_BIN) go install github.com/pressly/goose/v3/cmd/goose@v3.14.0
 
 install-protobuf:
 	brew install protobuf
@@ -36,6 +36,7 @@ generate-user-api:
 	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
 	api/user_api_v1/user_api.proto
 
+
 build:
 	GOOS=linux GOARCH=amd64 go build -o service_linux cmd/grpc_server/main.go
 
@@ -46,3 +47,15 @@ docker-build-and-push:
 	docker buildx build --no-cache --platform linux/amd64 -t cr.selcloud.ru/shemistan/user_server:v0.0.1 .
 	docker login -u token -p CRgAAAAA669cs4qWBBpC1rjlaYu3JZ5tV0e87G1I cr.selcloud.ru/shemistan
 	docker push cr.selcloud.ru/shemistan/user_server:v0.0.1
+
+
+local-migration-status:
+	./bin/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} status -v
+
+local-migration-up:
+	goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} up -v
+
+local-migration-down:
+	./bin/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} down -v
+
+# create new migration bin/goose -dir migrations create new_migrate sql

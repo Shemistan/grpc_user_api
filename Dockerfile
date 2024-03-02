@@ -12,4 +12,4 @@ WORKDIR /root/
 COPY --from=builder /go/github.com/Shemistan/grpc_user_api/bin/user_server .
 COPY --from=builder /go/github.com/Shemistan/grpc_user_api/prod.env .
 
-CMD ["./user_server", "-config-path", "prod.env"]
+CMD ["./user_server", "-config-path", "\"prod.env\""]

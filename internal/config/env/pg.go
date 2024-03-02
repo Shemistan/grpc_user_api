@@ -30,5 +30,5 @@ func NewPGConfig() (*pgConfig, error) {
 }
 
 func (cfg *pgConfig) DSN() string {
-	return cfg.dsn
+	return "host=localhost port=54322 dbname=grpc user=grpc password=grpc sslmode=disable"
 }

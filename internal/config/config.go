@@ -1,9 +1,5 @@
 package config
 
-import (
-	"github.com/joho/godotenv"
-)
-
 // GRPCConfig конфиг
 type GRPCConfig interface {
 	Address() string
@@ -19,12 +15,12 @@ type Tes interface {
 	Secret() string
 }
 
-// Load загрузить кофиги
-func Load(path string) error {
-	err := godotenv.Load(path)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
+//// Load загрузить кофиги
+//func Load(path string) error {
+//	err := godotenv.Load(path)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}

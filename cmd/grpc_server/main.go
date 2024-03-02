@@ -12,26 +12,25 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/Shemistan/grpc_user_api/internal/api"
-	"github.com/Shemistan/grpc_user_api/internal/config"
 	"github.com/Shemistan/grpc_user_api/internal/config/env"
 	pb "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
 )
 
-var configPath string
+//var configPath string
 
-func init() {
-	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
-}
+//func init() {
+//	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
+//}
 
 func main() {
 	flag.Parse()
 	ctx := context.Background()
 
 	// Считываем переменные окружения
-	err := config.Load(configPath)
-	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
-	}
+	//err := config.Load(configPath)
+	//if err != nil {
+	//	log.Fatalf("failed to load config: %v", err)
+	//}
 
 	grpcConfig, err := env.NewGRPCConfig()
 	if err != nil {

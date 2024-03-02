@@ -30,5 +30,5 @@ func NewTesConfig() (*tesConfig, error) {
 }
 
 func (cfg *tesConfig) Secret() string {
-	return cfg.secret
+	return "qwertqwerqwer"
 }

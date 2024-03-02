@@ -64,7 +64,7 @@ func main() {
 		Secret: secrConf.Secret(),
 	})
 
-	log.Println("server listening at:", lis.Addr(), "secret: ", secrConf.Secret(), os.Getenv("IMAGE_NAME"))
+	log.Println("server listening at:", lis.Addr(), "secret:>>>", secrConf.Secret(), os.Getenv("IMAGE_NAME"))
 
 	if err = s.Serve(lis); err != nil {
 		log.Fatalln("failed to server:", err.Error())

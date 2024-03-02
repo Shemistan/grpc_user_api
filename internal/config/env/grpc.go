@@ -1,11 +1,12 @@
 package env
 
 import (
-	"github.com/Shemistan/grpc_user_api/internal/config"
 	"net"
 	"os"
 
 	"github.com/pkg/errors"
+
+	"github.com/Shemistan/grpc_user_api/internal/config"
 )
 
 var _ config.GRPCConfig = (*grpcConfig)(nil)
@@ -20,6 +21,7 @@ type grpcConfig struct {
 	port string
 }
 
+// NewGRPCConfig - получить
 func NewGRPCConfig() (*grpcConfig, error) {
 	host := os.Getenv(grpcHostEnvName)
 	if len(host) == 0 {

@@ -43,6 +43,11 @@ func main() {
 		log.Fatalf("failed to get pg config: %v", err)
 	}
 
+	secrConf, err := env.NewTesConfig()
+	if err != nil {
+		log.Fatalf("failed to get pg config: %v", err)
+	}
+
 	lis, err := net.Listen("tcp", grpcConfig.Address())
 	if err != nil {
 		log.Fatalln("failed to listen: ", err.Error())
@@ -59,7 +64,7 @@ func main() {
 	reflection.Register(s)
 	pb.RegisterUserV1Server(s, &api.User{})
 
-	log.Println("server listening at:", lis.Addr())
+	log.Println("server listening at:", lis.Addr(), "secret: ", secrConf)
 
 	if err = s.Serve(lis); err != nil {
 		log.Fatalln("failed to server:", err.Error())

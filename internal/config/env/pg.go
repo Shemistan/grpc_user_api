@@ -2,8 +2,9 @@ package env
 
 import (
 	"errors"
-	"github.com/Shemistan/grpc_user_api/internal/config"
 	"os"
+
+	"github.com/Shemistan/grpc_user_api/internal/config"
 )
 
 const (
@@ -16,6 +17,7 @@ type pgConfig struct {
 	dsn string
 }
 
+// NewPGConfig - получить
 func NewPGConfig() (*pgConfig, error) {
 	dsn := os.Getenv(dsnEnvName)
 	if len(dsn) == 0 {

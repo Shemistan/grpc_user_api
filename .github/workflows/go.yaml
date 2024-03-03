@@ -65,4 +65,4 @@ jobs:
             GRPC_HOST=${{ secrets.GRPC_HOST }} \
             GRPC_PORT=${{ secrets.GRPC_PORT }} \
             MIGRATION_DIR=${{ secrets.MIGRATION_DIR }} \
-            POSTGRES_DB=${{ secrets.POSTGRES_DB }} \
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}

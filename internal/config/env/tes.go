@@ -1,6 +1,7 @@
 package env
 
 import (
+	"errors"
 	"os"
 
 	"github.com/Shemistan/grpc_user_api/internal/config"
@@ -19,9 +20,9 @@ type tesConfig struct {
 // NewTesConfig - получить
 func NewTesConfig() (*tesConfig, error) {
 	sec := os.Getenv(secret)
-	//if len(sec) == 0 {
-	//	return nil, errors.New("secret not found")
-	//}
+	if len(sec) == 0 {
+		return nil, errors.New("secret not found")
+	}
 
 	return &tesConfig{
 		secret: sec,

@@ -1,6 +1,7 @@
 package env
 
 import (
+	"errors"
 	"net"
 	"os"
 
@@ -22,14 +23,14 @@ type grpcConfig struct {
 // NewGRPCConfig - получить
 func NewGRPCConfig() (*grpcConfig, error) {
 	host := os.Getenv(grpcHostEnvName)
-	//if len(host) == 0 {
-	//	return nil, errors.New("grpc host not found")
-	//}
+	if len(host) == 0 {
+		return nil, errors.New("grpc host not found")
+	}
 
 	port := os.Getenv(grpcPortEnvName)
-	//if len(port) == 0 {
-	//	return nil, errors.New("grpc port not found")
-	//}
+	if len(port) == 0 {
+		return nil, errors.New("grpc port not found")
+	}
 
 	return &grpcConfig{
 		host: host,
@@ -38,5 +39,5 @@ func NewGRPCConfig() (*grpcConfig, error) {
 }
 
 func (cfg *grpcConfig) Address() string {
-	return net.JoinHostPort("localhost", "50051")
+	return net.JoinHostPort(cfg.host, cfg.port)
 }

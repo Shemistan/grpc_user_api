@@ -18,7 +18,7 @@ type tesConfig struct {
 
 // NewTesConfig - получить
 func NewTesConfig() (*tesConfig, error) {
-	sec := os.Getenv(secret)
+	sec := os.Getenv("PASSWORD_HASH_KEY")
 	//if len(sec) == 0 {
 	//	return nil, errors.New("secret not found")
 	//}

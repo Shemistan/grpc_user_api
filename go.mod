@@ -4,6 +4,8 @@ go 1.20
 
 require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
+	github.com/joho/godotenv v1.5.1
+	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.61.1
 	google.golang.org/protobuf v1.32.0
 )

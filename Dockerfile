@@ -10,6 +10,6 @@ FROM alpine:latest
 
 WORKDIR /root/
 COPY --from=builder /go/github.com/Shemistan/grpc_user_api/bin/user_server .
-COPY --from=builder /go/github.com/Shemistan/grpc_user_api/local.env .
+COPY --from=builder /go/github.com/Shemistan/grpc_user_api/.env .
 
-CMD ["./user_server", "--config-path", "local.env" ]
+CMD ["./user_server", "--config-path", ".env" ]

@@ -61,10 +61,10 @@ jobs:
             PG_DSN=${{ secrets.PG_DSN }} \
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
             POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
-            GRPC_HOST=${{ variables.GRPC_HOST }} \
-            GRPC_PORT=${{ variables.GRPC_PORT }} \
-            MIGRATION_DIR=${{ variables.MIGRATION_DIR }} \
-            POSTGRES_DB=${{ variables.POSTGRES_DB }} \
+            GRPC_HOST=${{ GRPC_HOST }} \
+            GRPC_PORT=${{ GRPC_PORT }} \
+            MIGRATION_DIR=${{ MIGRATION_DIR }} \
+            POSTGRES_DB=${{ POSTGRES_DB }} \
 #
 #  deploy-image:
 #    runs-on: ubuntu-latest

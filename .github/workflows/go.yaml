@@ -57,14 +57,14 @@ jobs:
             docker-compose up -d \
             -t $REGISTRY/$IMAGE_NAME:$TAG_NAME \
             -e PASSWORD_HASH_KEY=${{ secrets.PASSWORD_HASH_KEY }}\
-            -e MIGRATION_DSN=${{ secrets.MIGRATION_DSN }} \
-            -e PG_DSN=${{ secrets.PG_DSN }} \
-            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
-            -e POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
-            -e GRPC_HOST=${GRPC_HOST } \
-            -e GRPC_PORT=${GRPC_PORT } \
-            -e MIGRATION_DIR=${MIGRATION_DIR} \
-            -e POSTGRES_DB=${POSTGRES_DB} 
+            MIGRATION_DSN=${{ secrets.MIGRATION_DSN }} \
+            PG_DSN=${{ secrets.PG_DSN }} \
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }} \
+            GRPC_HOST=${{ secrets.GRPC_HOST }} \
+            GRPC_PORT=${{ secrets.GRPC_PORT }} \
+            MIGRATION_DIR=${{ secrets.MIGRATION_DIR }} \
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
 
 #
 #  deploy-image:

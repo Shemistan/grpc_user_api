@@ -58,4 +58,4 @@ local-migration-up:
 local-migration-down:
 	./bin/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} down -v
 
-# create new migration bin/goose -dir migrations create new_migrate sql
+# bin/goose -dir migrations create new_migrate sql

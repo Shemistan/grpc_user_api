@@ -14,9 +14,9 @@ type PGConfig interface {
 	DSN() string
 }
 
-// Tes тестовый
-type Tes interface {
-	Secret() string
+// SecretHashConfig конфиг
+type SecretHashConfig interface {
+	PasswordHashKey() string
 }
 
 // Load загрузить кофиги

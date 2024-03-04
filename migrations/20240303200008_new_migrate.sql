@@ -1,12 +1,14 @@
 -- +goose Up
-create table note (
+create table users (
                       id serial primary key,
-                      title text not null,
-                      body text not null,
+                      name varchar(50) not null,
+                      email varchar(50) not null,
+                      password varchar(50) not null,
+                      role integer not null,
                       created_at timestamp not null default now(),
                       updated_at timestamp
 );
 
 -- +goose Down
-drop table note;
+drop table users;
 

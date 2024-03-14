@@ -2,27 +2,33 @@ package user
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
+	"strconv"
+	"strings"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	def "github.com/Shemistan/grpc_user_api/internal/storage"
 )
 
 type storage struct {
-	db *sqlx.DB
+	//db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewStorage(db *sqlx.DB) def.User {
+// NewStorage - новый storage
+func NewStorage(db *pgxpool.Pool) def.User {
 	return &storage{db: db}
 }
 
 // Create - создать пользователя
 func (s *storage) Create(ctx context.Context, req model.User) (int64, error) {
-	query := `INSERT INTO users( name,email, password, role) VALUES ( $1, $2);`
+	query := `INSERT INTO users( name,email, password, role) VALUES ( $1, $2,$3,$4) RETURNING(id);`
 
 	var id int64
-	err := s.db.QueryRowContext(ctx, query, req.Name, req.Email, req.Password, req.Role).Scan(&id)
+	err := s.db.QueryRow(ctx, query, req.Name, req.Email, req.Password, req.Role).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -30,36 +36,119 @@ func (s *storage) Create(ctx context.Context, req model.User) (int64, error) {
 	return id, nil
 }
 
-// Create - редактировать пользователя
-func (s *storage) Update(ctx context.Context, req model.User) error {
-	query := `UPDATE users SET name=$1 ,email= $2, password=$3, role=$4, updated_at=now() WHERE id=$5`
+// Update - редактировать пользователя
+//func (s *storage) Update(ctx context.Context, req model.UpdateUser) error {
+//	query := `UPDATE users SET role=$1 %s %s %s,  updated_at=now() WHERE id=$2`
+//
+//	var isName, isEmail, isPassword string
+//	plasholderInx := 1
+//	args := make([]interface{}, 0, 2)
+//
+//	args = append(args, req.Role)
+//	plasholderInx++
+//
+//	args = append(args, req.ID)
+//	plasholderInx++
+//
+//	if req.Name != nil {
+//		isName = fmt.Sprintf(", name=$%d", plasholderInx)
+//		args = append(args, *req.Name)
+//		plasholderInx++
+//	}
+//
+//	if req.Email != nil {
+//		isEmail = fmt.Sprintf(", email=$%d", plasholderInx)
+//		args = append(args, *req.Email)
+//		plasholderInx++
+//	}
+//
+//	if req.NewPassword != nil && req.OldPassword != nil {
+//		isPassword = fmt.Sprintf(", password=$%d", plasholderInx)
+//		args = append(args, *req.NewPassword)
+//		plasholderInx++
+//	}
+//
+//	query = fmt.Sprintf(query, isName, isEmail, isPassword)
+//
+//	_, err := s.db.Exec(ctx, query, args)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}
 
-	_, err := s.db.ExecContext(ctx, query, req.Name, req.Email, req.Password, req.Role, req.ID)
-	if err != nil {
-		return err
+func (s *storage) Update(ctx context.Context, req model.UpdateUser) error {
+	query := `UPDATE users SET role=$1 %s,  updated_at=now() WHERE id=$2`
+	args := []interface{}{req.Role, req.ID}
+	placeholderIdx := 3
+	var clauses []string
+
+	addClause := func(clause string, value interface{}) {
+		clauses = append(clauses, clause)
+		args = append(args, value)
+		placeholderIdx++
 	}
 
-	return nil
+	if req.Name != nil {
+		addClause(", name=$"+strconv.Itoa(placeholderIdx), *req.Name)
+	}
+
+	if req.Email != nil {
+		addClause(", email=$"+strconv.Itoa(placeholderIdx), *req.Email)
+	}
+
+	if req.NewPassword != nil {
+		addClause(", password=$"+strconv.Itoa(placeholderIdx), *req.NewPassword)
+	}
+
+	query = fmt.Sprintf(query, strings.Join(clauses, " "))
+
+	_, err := s.db.Exec(ctx, query, args...)
+	return err
 }
 
-// Create - получить пользователя
+// GetUser - получить пользователя
 func (s *storage) GetUser(ctx context.Context, id int64) (model.User, error) {
-	query := `SELECT name, email, password, role, created_at, updated_at FROM users WHERE id = $1`
+	query := `SELECT  name, email, password, role, created_at, updated_at FROM users WHERE id = $1`
 
-	var res model.User
-	err := s.db.SelectContext(ctx, &res, query, id)
+	var createdAt, updatedAt sql.NullTime
+	var name, email, password string
+	var role int64
+	err := s.db.QueryRow(ctx, query, id).Scan(&name, &email, &password, &role, &createdAt, &updatedAt)
 	if err != nil {
-		return res, err
+		return model.User{}, err
 	}
 
-	return res, nil
+	return model.User{
+		ID:       id,
+		Name:     name,
+		Email:    email,
+		Password: password,
+		Role:     role,
+		CreateAt: createdAt.Time,
+		UpdateAt: updatedAt.Time,
+	}, nil
 }
 
-// Create - удалить пользователя
+func (s *storage) GetPasswordHash(ctx context.Context, id int64) (string, error) {
+	query := `SELECT   password FROM users WHERE id = $1`
+
+	var password string
+	err := s.db.QueryRow(ctx, query, id).Scan(&password)
+	if err != nil {
+		return "", err
+	}
+
+	return password, nil
+
+}
+
+// Delete - удалить пользователя
 func (s *storage) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM users WHERE id =$1`
 
-	_, err := s.db.ExecContext(ctx, query, id)
+	_, err := s.db.Exec(ctx, query, id)
 	if err != nil {
 		return err
 	}

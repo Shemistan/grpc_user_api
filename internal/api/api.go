@@ -9,5 +9,5 @@ import (
 type User struct {
 	pb.UnimplementedUserV1Server
 
-	service service.User
+	Service service.User
 }

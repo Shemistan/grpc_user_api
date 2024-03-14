@@ -1,8 +1,9 @@
-package utils
+package hasher
 
 import (
-	"github.com/Shemistan/grpc_user_api/internal/utils"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/Shemistan/grpc_user_api/internal/utils"
 )
 
 // service структура, реализующая интерфейс Hasher.
@@ -10,8 +11,8 @@ type service struct {
 	secretKey string
 }
 
-// NewService создает новый экземпляр service с заданным секретным ключом.
-func NewService(secretKey string) utils.Hasher {
+// New создает новый экземпляр service с заданным секретным ключом.
+func New(secretKey string) utils.Hasher {
 	return &service{secretKey: secretKey}
 }
 

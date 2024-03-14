@@ -47,6 +47,9 @@ message UpdateRequest{
   google.protobuf.StringValue name = 2;
   google.protobuf.StringValue email = 3;
   Role role = 4;
+  google.protobuf.StringValue old_password = 5;
+  google.protobuf.StringValue new_password = 6;
+  google.protobuf.StringValue new_password_confirm = 7;
 }
 
 message DeleteRequest {

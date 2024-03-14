@@ -59,3 +59,4 @@ local-migration-down:
 	./bin/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} down -v
 
 # bin/goose -dir migrations create new_migrate sql
+# go run cmd/grpc_server/main.go --config-path=".env"

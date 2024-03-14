@@ -6,11 +6,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func ToLoMap[T any, R any](conv func(T) R) func(T, int) R {
-	return func(item T, _ int) R {
-		return conv(item)
-	}
-}
+//func ToLoMap[T any, R any](conv func(T) R) func(T, int) R {
+//	return func(item T, _ int) R {
+//		return conv(item)
+//	}
+//}
 
 // RPCCreateUserToModelUser конвертер из rpc в model
 func RPCCreateUserToModelUser(req *pb.CreateRequest) model.User {
@@ -19,28 +19,48 @@ func RPCCreateUserToModelUser(req *pb.CreateRequest) model.User {
 	}
 
 	return model.User{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: req.Password,
-		Role:     int64(req.Role),
+		Name:     req.GetName(),
+		Email:    req.GetEmail(),
+		Password: req.GetPassword(),
+		Role:     int64(req.GetRole().Number()),
 	}
 }
 
-// RPCUpdateUserToModelUser конвертер из rpc в model
-func RPCUpdateUserToModelUser(req *pb.UpdateRequest) model.User {
+// RPCUpdateUserToModelUpdateUser конвертер из rpc в model
+func RPCUpdateUserToModelUpdateUser(req *pb.UpdateRequest) model.UpdateUser {
 	if req == nil {
-		return model.User{}
+		return model.UpdateUser{}
 	}
 
-	req.Email.GetValue()
-	return model.User{
-		ID:    req.Id,
-		Name:  req.Name.GetValue(),
-		Email: req.Email.GetValue(),
-		Role:  int64(req.Role),
+	var name, email, oldPassword, newPassword *string
+
+	if v := req.Name.GetValue(); v != "" {
+		name = &v
+	}
+
+	if v := req.Email.GetValue(); v != "" {
+		email = &v
+	}
+
+	if v := req.OldPassword.GetValue(); v != "" {
+		oldPassword = &v
+	}
+
+	if v := req.NewPassword.GetValue(); v != "" {
+		newPassword = &v
+	}
+
+	return model.UpdateUser{
+		ID:          req.GetId(),
+		Name:        name,
+		Email:       email,
+		OldPassword: oldPassword,
+		NewPassword: newPassword,
+		Role:        int64(req.Role),
 	}
 }
 
+// ModelUserToRPCGetUserResponse - конвертер из rpc в model
 func ModelUserToRPCGetUserResponse(req model.User) *pb.GetResponse {
 	return &pb.GetResponse{
 		Id:        req.ID,
@@ -48,6 +68,6 @@ func ModelUserToRPCGetUserResponse(req model.User) *pb.GetResponse {
 		Email:     req.Email,
 		Role:      pb.Role(req.Role),
 		CreatedAt: timestamppb.New(req.CreateAt),
-		UpdatedAt: timestamppb.New(req.UpdateDate),
+		UpdatedAt: timestamppb.New(req.UpdateAt),
 	}
 }

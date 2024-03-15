@@ -31,7 +31,6 @@ func main() {
 	flag.Parse()
 	ctx := context.Background()
 
-	//Считываем переменные окружения
 	err := config.Load(configPath)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
@@ -57,7 +56,6 @@ func main() {
 		log.Fatalln("failed to listen: ", err.Error())
 	}
 
-	// Создаем пул соединений с базой данных
 	pool, err := pgxpool.Connect(ctx, pgConfig.DSN())
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)

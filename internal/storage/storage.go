@@ -12,6 +12,5 @@ type User interface {
 	Update(ctx context.Context, req model.UpdateUser) error
 	GetUser(ctx context.Context, id int64) (model.User, error)
 	Delete(ctx context.Context, id int64) error
-
 	GetPasswordHash(ctx context.Context, id int64) (string, error)
 }

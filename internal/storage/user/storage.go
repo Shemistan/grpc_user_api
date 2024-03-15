@@ -36,48 +36,6 @@ func (s *storage) Create(ctx context.Context, req model.User) (int64, error) {
 	return id, nil
 }
 
-// Update - редактировать пользователя
-//func (s *storage) Update(ctx context.Context, req model.UpdateUser) error {
-//	query := `UPDATE users SET role=$1 %s %s %s,  updated_at=now() WHERE id=$2`
-//
-//	var isName, isEmail, isPassword string
-//	plasholderInx := 1
-//	args := make([]interface{}, 0, 2)
-//
-//	args = append(args, req.Role)
-//	plasholderInx++
-//
-//	args = append(args, req.ID)
-//	plasholderInx++
-//
-//	if req.Name != nil {
-//		isName = fmt.Sprintf(", name=$%d", plasholderInx)
-//		args = append(args, *req.Name)
-//		plasholderInx++
-//	}
-//
-//	if req.Email != nil {
-//		isEmail = fmt.Sprintf(", email=$%d", plasholderInx)
-//		args = append(args, *req.Email)
-//		plasholderInx++
-//	}
-//
-//	if req.NewPassword != nil && req.OldPassword != nil {
-//		isPassword = fmt.Sprintf(", password=$%d", plasholderInx)
-//		args = append(args, *req.NewPassword)
-//		plasholderInx++
-//	}
-//
-//	query = fmt.Sprintf(query, isName, isEmail, isPassword)
-//
-//	_, err := s.db.Exec(ctx, query, args)
-//	if err != nil {
-//		return err
-//	}
-//
-//	return nil
-//}
-
 func (s *storage) Update(ctx context.Context, req model.UpdateUser) error {
 	query := `UPDATE users SET role=$1 %s,  updated_at=now() WHERE id=$2`
 	args := []interface{}{req.Role, req.ID}

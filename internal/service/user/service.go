@@ -8,6 +8,7 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	def "github.com/Shemistan/grpc_user_api/internal/service"
 	"github.com/Shemistan/grpc_user_api/internal/storage"
+	"github.com/Shemistan/grpc_user_api/internal/storage/user/converter"
 	"github.com/Shemistan/grpc_user_api/internal/utils"
 )
 
@@ -34,7 +35,7 @@ func (s *service) Create(ctx context.Context, req model.User) (int64, error) {
 		return 0, err
 	}
 
-	return s.storage.Create(ctx, req)
+	return s.storage.Create(ctx, converter.ServiceUserToStorageUser(req))
 }
 
 // Update - пользователя
@@ -57,12 +58,16 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 		req.NewPassword = &hash
 	}
 
-	return s.storage.Update(ctx, req)
+	return s.storage.Update(ctx, converter.ServiceUpdateUserToStorageUpdateUser(req))
 }
 
 // GetUser - пользователя
 func (s *service) GetUser(ctx context.Context, id int64) (model.User, error) {
-	return s.storage.GetUser(ctx, id)
+	res, err := s.storage.GetUser(ctx, id)
+	if err != nil {
+		return model.User{}, err
+	}
+	return converter.StorageUserToServiceUser(res), nil
 }
 
 // Delete - пользователя

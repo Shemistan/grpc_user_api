@@ -14,7 +14,7 @@ func (u *User) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateRes
 		return nil, errors.New("password mismatch")
 	}
 
-	res, err := u.Service.Create(ctx, converter.RPCCreateUserToModelUser(req))
+	res, err := u.service.Create(ctx, converter.RPCCreateUserToModelUser(req))
 	if err != nil {
 		return nil, err
 	}

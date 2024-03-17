@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/Shemistan/grpc_user_api/internal/api"
+	userAPI "github.com/Shemistan/grpc_user_api/internal/api/user_v1"
 	"github.com/Shemistan/grpc_user_api/internal/client/db"
 	"github.com/Shemistan/grpc_user_api/internal/client/db/pg"
 	"github.com/Shemistan/grpc_user_api/internal/client/db/transaction"
@@ -12,7 +12,7 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/config"
 	"github.com/Shemistan/grpc_user_api/internal/config/env"
 	"github.com/Shemistan/grpc_user_api/internal/service"
-	"github.com/Shemistan/grpc_user_api/internal/service/user"
+	userService "github.com/Shemistan/grpc_user_api/internal/service/user"
 	"github.com/Shemistan/grpc_user_api/internal/storage"
 	userStorage "github.com/Shemistan/grpc_user_api/internal/storage/user"
 	"github.com/Shemistan/grpc_user_api/internal/utils"
@@ -29,7 +29,7 @@ type serviceProvider struct {
 
 	userStorage storage.User
 	userService service.User
-	userAPI     *api.User
+	userAPI     *userAPI.User
 
 	passwordHasher utils.Hasher
 }
@@ -122,7 +122,7 @@ func (s *serviceProvider) PasswordHasher(_ context.Context) utils.Hasher {
 
 func (s *serviceProvider) UserService(ctx context.Context) service.User {
 	if s.userService == nil {
-		s.userService = user.NewService(
+		s.userService = userService.NewService(
 			s.UserStorage(ctx),
 			s.PasswordHasher(ctx),
 		)
@@ -131,9 +131,9 @@ func (s *serviceProvider) UserService(ctx context.Context) service.User {
 	return s.userService
 }
 
-func (s *serviceProvider) UserAPI(ctx context.Context) *api.User {
+func (s *serviceProvider) UserAPI(ctx context.Context) *userAPI.User {
 	if s.userAPI == nil {
-		s.userAPI = api.New(s.UserService(ctx))
+		s.userAPI = userAPI.New(s.UserService(ctx))
 	}
 
 	return s.userAPI

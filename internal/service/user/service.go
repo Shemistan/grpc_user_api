@@ -12,41 +12,52 @@ import (
 )
 
 type service struct {
-	storage storage.User
-	hasher  utils.Hasher
+	userStorage storage.User
+	hasher      utils.Hasher
 }
 
 // NewService - новый сервис
 func NewService(storage storage.User, hasher utils.Hasher) def.User {
 	return &service{
-		storage: storage,
-		hasher:  hasher,
+		userStorage: storage,
+		hasher:      hasher,
 	}
 }
 
-// Create - пользователя
+// Create - создание пользователя
 func (s *service) Create(ctx context.Context, req model.User) (int64, error) {
-	var err error
+	if req.Password != req.PasswordConfirm {
+		return 0, errors.New("password mismatch")
+	}
 
-	req.Password, err = s.hasher.GetPasswordHash(req.Password)
+	passwordHash, err := s.hasher.GetPasswordHash(req.Password)
 	if err != nil {
 		log.Println("failed to hashing password:", err.Error())
 		return 0, err
 	}
 
-	return s.storage.Create(ctx, req)
+	req.Password = passwordHash
+
+	return s.userStorage.Create(ctx, req)
 }
 
-// Update - пользователя
+// Update - - обновление пользователя
 func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
-	if req.OldPassword != nil {
+	if req.NewPassword != nil && req.NewPasswordConfirm != nil {
+		switch {
+		case req.NewPassword != req.NewPasswordConfirm:
+			return errors.New("password mismatch")
+		case req.OldPassword == nil:
+			return errors.New("password mismatch")
+		}
+
 		ok, err := s.checkUserPassword(ctx, req.ID, *req.OldPassword)
 		if err != nil {
 			return err
 		}
 
 		if !ok {
-			return errors.New("failed update: old password not valid")
+			return errors.New("old password not valid")
 		}
 
 		hash, err := s.hasher.GetPasswordHash(*req.NewPassword)
@@ -57,21 +68,21 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 		req.NewPassword = &hash
 	}
 
-	return s.storage.Update(ctx, req)
+	return s.userStorage.Update(ctx, req)
 }
 
-// GetUser - пользователя
+// GetUser - полуучение пользователя
 func (s *service) GetUser(ctx context.Context, id int64) (model.User, error) {
-	return s.storage.GetUser(ctx, id)
+	return s.userStorage.GetUser(ctx, id)
 }
 
-// Delete - пользователя
+// Delete - удаление пользователя
 func (s *service) Delete(ctx context.Context, id int64) error {
-	return s.storage.Delete(ctx, id)
+	return s.userStorage.Delete(ctx, id)
 }
 
 func (s *service) checkUserPassword(ctx context.Context, userID int64, password string) (bool, error) {
-	passwordHash, err := s.storage.GetPasswordHash(ctx, userID)
+	passwordHash, err := s.userStorage.GetPasswordHash(ctx, userID)
 	if err != nil {
 		return false, err
 	}

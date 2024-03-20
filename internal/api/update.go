@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"errors"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -12,13 +11,6 @@ import (
 
 // Update - редактировать имя, почту и роль пользователя
 func (u *User) Update(ctx context.Context, req *pb.UpdateRequest) (*emptypb.Empty, error) {
-	if req.GetOldPassword().GetValue() != "" {
-		if req.GetNewPassword().GetValue() != req.GetNewPasswordConfirm().GetValue() ||
-			req.GetNewPassword().GetValue() == "" || req.GetNewPasswordConfirm().GetValue() == "" {
-			return &emptypb.Empty{}, errors.New("failed to update: new password is not valid")
-		}
-	}
-
 	err := u.Service.Update(ctx, converter.RPCUpdateUserToModelUpdateUser(req))
 	if err != nil {
 		return nil, err

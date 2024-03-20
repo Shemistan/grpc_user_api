@@ -14,7 +14,6 @@ import (
 )
 
 type storage struct {
-	//db *sqlx.DB
 	db *pgxpool.Pool
 }
 
@@ -63,7 +62,11 @@ func (s *storage) Update(ctx context.Context, req model.UpdateUser) error {
 	query = fmt.Sprintf(query, strings.Join(clauses, " "))
 
 	_, err := s.db.Exec(ctx, query, args...)
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // GetUser - получить пользователя
@@ -90,7 +93,7 @@ func (s *storage) GetUser(ctx context.Context, id int64) (model.User, error) {
 }
 
 func (s *storage) GetPasswordHash(ctx context.Context, id int64) (string, error) {
-	query := `SELECT   password FROM users WHERE id = $1`
+	query := `SELECT password FROM users WHERE id = $1`
 
 	var password string
 	err := s.db.QueryRow(ctx, query, id).Scan(&password)

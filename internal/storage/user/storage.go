@@ -6,7 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Shemistan/grpc_user_api/internal/client/db"
+	"github.com/Shemistan/platform_common/pkg/db"
+
 	def "github.com/Shemistan/grpc_user_api/internal/storage"
 	"github.com/Shemistan/grpc_user_api/internal/storage/user/model"
 )

@@ -4,11 +4,12 @@ import (
 	"context"
 	"log"
 
+	"github.com/Shemistan/platform_common/pkg/closer"
+	"github.com/Shemistan/platform_common/pkg/db"
+	"github.com/Shemistan/platform_common/pkg/db/pg"
+	"github.com/Shemistan/platform_common/pkg/db/transaction"
+
 	userAPI "github.com/Shemistan/grpc_user_api/internal/api/user_v1"
-	"github.com/Shemistan/grpc_user_api/internal/client/db"
-	"github.com/Shemistan/grpc_user_api/internal/client/db/pg"
-	"github.com/Shemistan/grpc_user_api/internal/client/db/transaction"
-	"github.com/Shemistan/grpc_user_api/internal/closer"
 	"github.com/Shemistan/grpc_user_api/internal/config"
 	"github.com/Shemistan/grpc_user_api/internal/config/env"
 	"github.com/Shemistan/grpc_user_api/internal/service"

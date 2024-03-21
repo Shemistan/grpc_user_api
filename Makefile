@@ -59,5 +59,15 @@ local-migration-up:
 local-migration-down:
 	./bin/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} down -v
 
-# bin/goose -dir migrations create new_migrate sql
-# go run cmd/grpc_server/main.go --config-path=".env"
+.PHONY: test-coverage
+test-coverage:
+	go clean -testcache
+	go test ./... -coverprofile=coverage.tmp.out -covermode count \
+	-coverpkg=github.com/Shemistan/grpc_user_api/internal/service/...,\
+	github.com/Shemistan/grpc_user_api/internal/api/...,github.com/Shemistan/grpc_user_api/internal/converter/...  \
+	-count 5
+	grep -v 'mocks\|config' coverage.tmp.out  > coverage.out
+	rm coverage.tmp.out
+	go tool cover -html=coverage.out;
+	go tool cover -func=./coverage.out | grep "total";
+	grep -sqFx "/coverage.out" .gitignore || echo "/coverage.out" >> .gitignore

@@ -1,18 +1,10 @@
 package converter
 
 import (
-	"time"
-
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	pb "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-//func ToLoMap[T any, R any](conv func(T) R) func(T, int) R {
-//	return func(item T, _ int) R {
-//		return conv(item)
-//	}
-//}
 
 // RPCCreateUserToModelUser конвертер из rpc в model
 func RPCCreateUserToModelUser(req *pb.CreateRequest) model.User {
@@ -21,59 +13,63 @@ func RPCCreateUserToModelUser(req *pb.CreateRequest) model.User {
 	}
 
 	return model.User{
-		Name:     req.GetName(),
-		Email:    req.GetEmail(),
-		Password: req.GetPassword(),
-		Role:     int64(req.GetRole().Number()),
+		Name:            req.GetName(),
+		Email:           req.GetEmail(),
+		Password:        req.GetPassword(),
+		PasswordConfirm: req.GetPasswordConfirm(),
+		Role:            int64(req.GetRole().Number()),
 	}
 }
 
 // RPCUpdateUserToModelUpdateUser конвертер из rpc в model
 func RPCUpdateUserToModelUpdateUser(req *pb.UpdateRequest) model.UpdateUser {
+	var res model.UpdateUser
+
 	if req == nil {
-		return model.UpdateUser{}
+		return res
 	}
 
-	var name, email, oldPassword, newPassword *string
+	var name, email, oldPassword, newPassword, newPasswordConfirm string
 
-	if v := req.Name.GetValue(); v != "" {
-		name = &v
+	if req.Name != nil {
+		name = req.Name.GetValue()
+		res.Name = &name
 	}
 
-	if v := req.Email.GetValue(); v != "" {
-		email = &v
+	if req.Email != nil {
+		email = req.Email.GetValue()
+		res.Email = &email
 	}
 
-	if v := req.OldPassword.GetValue(); v != "" {
-		oldPassword = &v
+	if req.OldPassword != nil {
+		oldPassword = req.OldPassword.GetValue()
+		res.OldPassword = &oldPassword
 	}
 
-	if v := req.NewPassword.GetValue(); v != "" {
-		newPassword = &v
+	if req.NewPassword != nil {
+		newPassword = req.NewPassword.GetValue()
+		res.NewPassword = &newPassword
 	}
 
-	return model.UpdateUser{
-		ID:          req.GetId(),
-		Name:        name,
-		Email:       email,
-		OldPassword: oldPassword,
-		NewPassword: newPassword,
-		Role:        int64(req.Role),
+	if req.NewPasswordConfirm != nil {
+		newPasswordConfirm = req.NewPasswordConfirm.GetValue()
+		res.NewPasswordConfirm = &newPasswordConfirm
 	}
+
+	res.ID = req.GetId()
+	res.Role = int64(req.GetRole())
+
+	return res
 }
 
 // ModelUserToRPCGetUserResponse - конвертер из rpc в model
 func ModelUserToRPCGetUserResponse(req model.User) *pb.GetResponse {
-	var t time.Time
-	if req.UpdateAt != nil {
-		t = *req.UpdateAt
-	}
 	return &pb.GetResponse{
 		Id:        req.ID,
 		Name:      req.Name,
 		Email:     req.Email,
 		Role:      pb.Role(req.Role),
 		CreatedAt: timestamppb.New(req.CreateAt),
-		UpdatedAt: timestamppb.New(t),
+		UpdatedAt: timestamppb.New(req.UpdateAt),
 	}
 }

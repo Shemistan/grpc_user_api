@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"github.com/Shemistan/grpc_user_api/internal/model"
+	"github.com/Shemistan/grpc_user_api/internal/storage/user/model"
 )
 
 // User - для работы с пользователями

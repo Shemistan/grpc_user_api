@@ -8,6 +8,7 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	def "github.com/Shemistan/grpc_user_api/internal/service"
 	"github.com/Shemistan/grpc_user_api/internal/storage"
+	"github.com/Shemistan/grpc_user_api/internal/storage/user/converter"
 	"github.com/Shemistan/grpc_user_api/internal/utils"
 )
 
@@ -36,13 +37,13 @@ func (s *service) Create(ctx context.Context, req model.User) (int64, error) {
 		return 0, err
 	}
 
-	req.Password = passwordHash
-
-	return s.userStorage.Create(ctx, req)
+	return s.userStorage.Create(ctx, converter.ServiceUserToStorageUser(req, passwordHash))
 }
 
 // Update - - обновление пользователя
 func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
+	var passwordHash *string
+
 	if req.NewPassword != nil && req.NewPasswordConfirm != nil {
 		switch {
 		case req.NewPassword != req.NewPasswordConfirm:
@@ -65,15 +66,20 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 			return err
 		}
 
-		req.NewPassword = &hash
+		passwordHash = &hash
 	}
 
-	return s.userStorage.Update(ctx, req)
+	return s.userStorage.Update(ctx, converter.ServiceUpdateUserToStorageUpdateUser(req, passwordHash))
 }
 
 // GetUser - полуучение пользователя
 func (s *service) GetUser(ctx context.Context, id int64) (model.User, error) {
-	return s.userStorage.GetUser(ctx, id)
+	res, err := s.userStorage.GetUser(ctx, id)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return converter.StorageUserToServiceUser(res), nil
 }
 
 // Delete - удаление пользователя

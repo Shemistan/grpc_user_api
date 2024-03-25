@@ -9,7 +9,7 @@ import (
 
 // Create - создать пользователя
 func (u *User) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
-	res, err := u.Service.Create(ctx, converter.RPCCreateUserToModelUser(req))
+	res, err := u.service.Create(ctx, converter.RPCCreateUserToModelUser(req))
 	if err != nil {
 		return nil, err
 	}

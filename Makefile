@@ -5,6 +5,7 @@ install-golangci-lint:
 
 
 lint:
+	golangci-lint cache clean
 	GOBIN=$(LOCAL_BIN) golangci-lint run ./... --config .golangci.pipeline.yaml
 
 

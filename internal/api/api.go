@@ -9,5 +9,12 @@ import (
 type User struct {
 	pb.UnimplementedUserV1Server
 
-	Service service.User
+	service service.User
+}
+
+// New - создать новую структуру реализующая методы АПИ
+func New(service service.User) *User {
+	return &User{
+		service: service,
+	}
 }

@@ -9,7 +9,7 @@ import (
 
 // Delete - удалить пользователя по id
 func (u *User) Delete(ctx context.Context, req *pb.DeleteRequest) (*emptypb.Empty, error) {
-	err := u.Service.Delete(ctx, req.GetId())
+	err := u.service.Delete(ctx, req.GetId())
 	if err != nil {
 		return nil, err
 	}

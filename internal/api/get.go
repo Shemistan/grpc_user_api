@@ -9,7 +9,7 @@ import (
 
 // Get - получить пользователя по id
 func (u *User) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
-	res, err := u.Service.GetUser(ctx, req.GetId())
+	res, err := u.service.GetUser(ctx, req.GetId())
 	if err != nil {
 		return nil, err
 	}

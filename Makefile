@@ -59,6 +59,11 @@ local-migration-up:
 local-migration-down:
 	./bin/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} down -v
 
+.PHONY: test
+test:
+	go clean -testcache
+	go test ./... -covermode count -coverpkg=github.com/olezhek28/microservices_course/week_4/internal/service/...,github.com/olezhek28/microservices_course/week_4/internal/api/... -count 5
+
 .PHONY: test-coverage
 test-coverage:
 	go clean -testcache

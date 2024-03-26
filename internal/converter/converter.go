@@ -64,12 +64,17 @@ func RPCUpdateUserToModelUpdateUser(req *pb.UpdateRequest) model.UpdateUser {
 
 // ModelUserToRPCGetUserResponse - конвертер из rpc в model
 func ModelUserToRPCGetUserResponse(req model.User) *pb.GetResponse {
+	var updateAt *timestamppb.Timestamp
+	if req.UpdateAt != nil {
+		updateAt = timestamppb.New(*req.UpdateAt)
+	}
+
 	return &pb.GetResponse{
 		Id:        req.ID,
 		Name:      req.Name,
 		Email:     req.Email,
 		Role:      pb.Role(req.Role),
 		CreatedAt: timestamppb.New(req.CreateAt),
-		UpdatedAt: timestamppb.New(req.UpdateAt),
+		UpdatedAt: updateAt,
 	}
 }

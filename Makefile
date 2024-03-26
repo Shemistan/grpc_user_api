@@ -5,6 +5,7 @@ install-golangci-lint:
 
 
 lint:
+	golangci-lint cache clean
 	GOBIN=$(LOCAL_BIN) golangci-lint run ./... --config .golangci.pipeline.yaml
 
 
@@ -57,3 +58,22 @@ local-migration-up:
 
 local-migration-down:
 	./bin/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} down -v
+
+.PHONY: test
+test:
+	go clean -testcache
+	go test ./... -covermode count -coverpkg=github.com/olezhek28/microservices_course/week_4/internal/service/...,github.com/olezhek28/microservices_course/week_4/internal/api/... -count 5
+
+.PHONY: test-coverage
+test-coverage:
+	go clean -testcache
+	go test ./... -coverprofile=coverage.tmp.out -covermode count \
+	-coverpkg=github.com/Shemistan/grpc_user_api/internal/service/...,\
+	github.com/Shemistan/grpc_user_api/internal/api/...,github.com/Shemistan/grpc_user_api/internal/converter/...  \
+	,github.com/Shemistan/grpc_user_api/internal/storage/converter/...
+	-count 5
+	grep -v 'mocks\|config' coverage.tmp.out  > coverage.out
+	rm coverage.tmp.out
+	go tool cover -html=coverage.out;
+	go tool cover -func=./coverage.out | grep "total";
+	grep -sqFx "/coverage.out" .gitignore || echo "/coverage.out" >> .gitignore

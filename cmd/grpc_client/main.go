@@ -35,13 +35,13 @@ func main() {
 func runClientMethods(ctx context.Context, c pb.UserV1Client) {
 	resGet, err := c.Get(ctx, &pb.GetRequest{Id: userID})
 	if err != nil {
-		log.Println("failed to get user: ", err.Error())
+		log.Println("failed to get user_v1: ", err.Error())
 	}
 	log.Printf("get response: %+v\n", resGet)
 
 	_, err = c.Delete(ctx, &pb.DeleteRequest{Id: userID})
 	if err != nil {
-		log.Println("failed to delete user: ", err.Error())
+		log.Println("failed to delete user_v1: ", err.Error())
 	}
 
 	resCreate, err := c.Create(ctx, &pb.CreateRequest{
@@ -52,7 +52,7 @@ func runClientMethods(ctx context.Context, c pb.UserV1Client) {
 		Role:            1,
 	})
 	if err != nil {
-		log.Println("failed to Create user: ", err.Error())
+		log.Println("failed to Create user_v1: ", err.Error())
 	}
 	log.Printf("create response: %+v\n", resCreate)
 
@@ -63,6 +63,6 @@ func runClientMethods(ctx context.Context, c pb.UserV1Client) {
 		Role:  0,
 	})
 	if err != nil {
-		log.Println("failed to Update user: ", err.Error())
+		log.Println("failed to Update user_v1: ", err.Error())
 	}
 }

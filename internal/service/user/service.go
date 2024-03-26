@@ -2,9 +2,9 @@ package user
 
 import (
 	"context"
-	"errors"
 	"log"
 
+	serviceErrors "github.com/Shemistan/grpc_user_api/internal/constants/errors"
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	def "github.com/Shemistan/grpc_user_api/internal/service"
 	"github.com/Shemistan/grpc_user_api/internal/storage"
@@ -28,7 +28,7 @@ func NewService(storage storage.User, hasher utils.Hasher) def.User {
 // Create - создание пользователя
 func (s *service) Create(ctx context.Context, req model.User) (int64, error) {
 	if req.Password != req.PasswordConfirm {
-		return 0, errors.New("password mismatch")
+		return 0, serviceErrors.ErrorPasswordMismatch
 	}
 
 	passwordHash, err := s.hasher.GetPasswordHash(req.Password)
@@ -37,7 +37,12 @@ func (s *service) Create(ctx context.Context, req model.User) (int64, error) {
 		return 0, err
 	}
 
-	return s.userStorage.Create(ctx, converter.ServiceUserToStorageUser(req, passwordHash))
+	res, err := s.userStorage.Create(ctx, converter.ServiceUserToStorageUser(req, passwordHash))
+	if err != nil {
+		return 0, err
+	}
+
+	return res, nil
 }
 
 // Update - - обновление пользователя
@@ -46,10 +51,10 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 
 	if req.NewPassword != nil && req.NewPasswordConfirm != nil {
 		switch {
-		case req.NewPassword != req.NewPasswordConfirm:
-			return errors.New("password mismatch")
+		case *req.NewPassword != *req.NewPasswordConfirm:
+			return serviceErrors.ErrorPasswordMismatch
 		case req.OldPassword == nil:
-			return errors.New("password mismatch")
+			return serviceErrors.ErrorPasswordMismatch
 		}
 
 		ok, err := s.checkUserPassword(ctx, req.ID, *req.OldPassword)
@@ -58,7 +63,7 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 		}
 
 		if !ok {
-			return errors.New("old password not valid")
+			return serviceErrors.ErrorsOldPasswordNotValid
 		}
 
 		hash, err := s.hasher.GetPasswordHash(*req.NewPassword)
@@ -69,7 +74,12 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 		passwordHash = &hash
 	}
 
-	return s.userStorage.Update(ctx, converter.ServiceUpdateUserToStorageUpdateUser(req, passwordHash))
+	err := s.userStorage.Update(ctx, converter.ServiceUpdateUserToStorageUpdateUser(req, passwordHash))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // GetUser - полуучение пользователя
@@ -93,5 +103,6 @@ func (s *service) checkUserPassword(ctx context.Context, userID int64, password 
 		return false, err
 	}
 
-	return s.hasher.CheckPassword(passwordHash, password), nil
+	res := s.hasher.CheckPassword(passwordHash, password)
+	return res, nil
 }

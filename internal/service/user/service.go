@@ -8,7 +8,6 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	def "github.com/Shemistan/grpc_user_api/internal/service"
 	"github.com/Shemistan/grpc_user_api/internal/storage"
-	"github.com/Shemistan/grpc_user_api/internal/storage/user/converter"
 	"github.com/Shemistan/grpc_user_api/internal/utils"
 )
 
@@ -37,7 +36,12 @@ func (s *service) Create(ctx context.Context, req model.User) (int64, error) {
 		return 0, err
 	}
 
-	return s.userStorage.Create(ctx, converter.ServiceUserToStorageUser(req, passwordHash))
+	userID, err := s.userStorage.Create(ctx, req, passwordHash)
+	if err != nil {
+		return 0, err
+	}
+
+	return userID, nil
 }
 
 // Update - - обновление пользователя
@@ -45,11 +49,12 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 	var passwordHash *string
 
 	if req.NewPassword != nil && req.NewPasswordConfirm != nil {
-		switch {
-		case req.NewPassword != req.NewPasswordConfirm:
+		if *req.NewPassword != *req.NewPasswordConfirm {
 			return errors.New("password mismatch")
-		case req.OldPassword == nil:
-			return errors.New("password mismatch")
+		}
+
+		if req.OldPassword == nil {
+			return errors.New("old password not found")
 		}
 
 		ok, err := s.checkUserPassword(ctx, req.ID, *req.OldPassword)
@@ -69,22 +74,32 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 		passwordHash = &hash
 	}
 
-	return s.userStorage.Update(ctx, converter.ServiceUpdateUserToStorageUpdateUser(req, passwordHash))
+	err := s.userStorage.Update(ctx, req, passwordHash)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// GetUser - полуучение пользователя
+// GetUser - получение пользователя
 func (s *service) GetUser(ctx context.Context, id int64) (model.User, error) {
-	res, err := s.userStorage.GetUser(ctx, id)
+	user, err := s.userStorage.GetUser(ctx, id)
 	if err != nil {
 		return model.User{}, err
 	}
 
-	return converter.StorageUserToServiceUser(res), nil
+	return user, nil
 }
 
 // Delete - удаление пользователя
 func (s *service) Delete(ctx context.Context, id int64) error {
-	return s.userStorage.Delete(ctx, id)
+	err := s.userStorage.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) checkUserPassword(ctx context.Context, userID int64, password string) (bool, error) {

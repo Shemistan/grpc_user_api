@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"flag"
 	"log"
 	"net"
 
@@ -23,8 +24,7 @@ type App struct {
 var configPath string
 
 func init() {
-	configPath = ".env"
-	//flag.StringVar(&configPath, "config-path", ".env", "path to config file")
+	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
 }
 
 // NewApp - создать новый экземпляр структуры приложения

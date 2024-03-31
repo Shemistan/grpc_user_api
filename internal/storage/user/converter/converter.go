@@ -11,9 +11,9 @@ import (
 // ServiceUserToStorageUser - конвертер из модели сервиса в модель хранилища
 func ServiceUserToStorageUser(req serviceModel.User, passwordHash string) storageModel.User {
 	var updateAt sql.NullTime
-	if req.UpdateAt != nil {
+	if req.UpdatedAt != nil {
 		updateAt = sql.NullTime{
-			Time:  *req.UpdateAt,
+			Time:  *req.UpdatedAt,
 			Valid: true,
 		}
 	}
@@ -36,13 +36,13 @@ func StorageUserToServiceUser(req storageModel.User) serviceModel.User {
 	}
 
 	return serviceModel.User{
-		ID:       req.ID,
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: req.Password,
-		Role:     req.Role,
-		CreateAt: req.CreatedAt.Time,
-		UpdateAt: updateAt,
+		ID:        req.ID,
+		Name:      req.Name,
+		Email:     req.Email,
+		Password:  req.Password,
+		Role:      req.Role,
+		CreatedAt: req.CreatedAt.Time,
+		UpdatedAt: updateAt,
 	}
 }
 

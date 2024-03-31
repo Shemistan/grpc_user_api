@@ -9,9 +9,9 @@ type User struct {
 	Email           string `db:"email"`
 	Password        string `db:"password"`
 	PasswordConfirm string
-	Role            int64     `db:"role"`
-	CreateAt        time.Time `db:"create_at"`
-	UpdateAt        time.Time `db:"update_at"`
+	Role            int64      `db:"role"`
+	CreatedAt       time.Time  `db:"create_at"`
+	UpdatedAt       *time.Time `db:"update_at"`
 }
 
 // UpdateUser - модель пользователя для редактирования

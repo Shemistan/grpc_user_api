@@ -11,7 +11,7 @@ import (
 
 // Update - редактировать имя, почту и роль пользователя
 func (u *User) Update(ctx context.Context, req *pb.UpdateRequest) (*emptypb.Empty, error) {
-	err := u.Service.Update(ctx, converter.RPCUpdateUserToModelUpdateUser(req))
+	err := u.service.Update(ctx, converter.RPCUpdateUserToModelUpdateUser(req))
 	if err != nil {
 		return nil, err
 	}

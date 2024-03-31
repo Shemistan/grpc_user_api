@@ -2,32 +2,40 @@ package user
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
-	"strconv"
-	"strings"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/Masterminds/squirrel"
 
+	"github.com/Shemistan/grpc_user_api/internal/client/db"
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	def "github.com/Shemistan/grpc_user_api/internal/storage"
+	"github.com/Shemistan/grpc_user_api/internal/storage/user/converter"
+	storageModel "github.com/Shemistan/grpc_user_api/internal/storage/user/model"
 )
 
 type storage struct {
-	db *pgxpool.Pool
+	db        db.Client
+	txManager db.TxManager
 }
 
 // NewStorage - новый storage
-func NewStorage(db *pgxpool.Pool) def.User {
-	return &storage{db: db}
+func NewStorage(db db.Client, txManager db.TxManager) def.User {
+	return &storage{
+		db:        db,
+		txManager: txManager,
+	}
 }
 
 // Create - создать пользователя
-func (s *storage) Create(ctx context.Context, req model.User) (int64, error) {
+func (s *storage) Create(ctx context.Context, req model.User, passwordHash string) (int64, error) {
+	user := converter.ServiceUserToStorageUser(req, passwordHash)
+
 	query := `INSERT INTO users( name,email, password, role) VALUES ( $1, $2,$3,$4) RETURNING(id);`
 
 	var id int64
-	err := s.db.QueryRow(ctx, query, req.Name, req.Email, req.Password, req.Role).Scan(&id)
+	err := s.db.DB().QueryRowContext(ctx, db.Query{
+		Name:     "create_user",
+		QueryRaw: query,
+	}, user.Name, user.Email, user.Password, user.Role).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -35,81 +43,78 @@ func (s *storage) Create(ctx context.Context, req model.User) (int64, error) {
 	return id, nil
 }
 
-func (s *storage) Update(ctx context.Context, req model.UpdateUser) error {
-	query := `UPDATE users SET role=$1 %s,  updated_at=now() WHERE id=$2`
-	args := []interface{}{req.Role, req.ID}
-	placeholderIdx := 3
-	var clauses []string
+func (s *storage) Update(ctx context.Context, req model.UpdateUser, passwordHash *string) error {
+	user := converter.ServiceUpdateUserToStorageUpdateUser(req, passwordHash)
 
-	addClause := func(clause string, value interface{}) {
-		clauses = append(clauses, clause)
-		args = append(args, value)
-		placeholderIdx++
+	qb := squirrel.Update("users").Set("role", user.Role)
+
+	if user.Name != nil {
+		qb = qb.Set("name", *user.Name)
 	}
 
-	if req.Name != nil {
-		addClause(", name=$"+strconv.Itoa(placeholderIdx), *req.Name)
+	if user.Email != nil {
+		qb = qb.Set("email", *user.Email)
 	}
 
-	if req.Email != nil {
-		addClause(", email=$"+strconv.Itoa(placeholderIdx), *req.Email)
+	if user.Password != nil {
+		qb = qb.Set("password", *user.Password)
 	}
 
-	if req.NewPassword != nil {
-		addClause(", password=$"+strconv.Itoa(placeholderIdx), *req.NewPassword)
-	}
+	qb = qb.Where(squirrel.Eq{"id": user.ID}).PlaceholderFormat(squirrel.Dollar)
 
-	query = fmt.Sprintf(query, strings.Join(clauses, " "))
-
-	_, err := s.db.Exec(ctx, query, args...)
+	query, args, err := qb.ToSql()
 	if err != nil {
 		return err
 	}
 
-	return nil
+	_, err = s.db.DB().ExecContext(ctx, db.Query{
+		Name:     "update_user",
+		QueryRaw: query,
+	}, args...)
+
+	return err
 }
 
 // GetUser - получить пользователя
 func (s *storage) GetUser(ctx context.Context, id int64) (model.User, error) {
 	query := `SELECT  name, email, password, role, created_at, updated_at FROM users WHERE id = $1`
 
-	var createdAt, updatedAt sql.NullTime
-	var name, email, password string
-	var role int64
-	err := s.db.QueryRow(ctx, query, id).Scan(&name, &email, &password, &role, &createdAt, &updatedAt)
+	var user storageModel.User
+	err := s.db.DB().ScanOneContext(ctx, &user, db.Query{
+		Name:     "get_user",
+		QueryRaw: query,
+	}, id)
 	if err != nil {
 		return model.User{}, err
 	}
 
-	return model.User{
-		ID:       id,
-		Name:     name,
-		Email:    email,
-		Password: password,
-		Role:     role,
-		CreateAt: createdAt.Time,
-		UpdateAt: updatedAt.Time,
-	}, nil
+	return converter.StorageUserToServiceUser(user), nil
 }
 
+// GetPasswordHash - получить hash пароля
 func (s *storage) GetPasswordHash(ctx context.Context, id int64) (string, error) {
 	query := `SELECT password FROM users WHERE id = $1`
 
 	var password string
-	err := s.db.QueryRow(ctx, query, id).Scan(&password)
+	err := s.db.DB().QueryRowContext(ctx, db.Query{
+		Name:     "get_password_hash",
+		QueryRaw: query,
+	}, id).Scan(&password)
 	if err != nil {
 		return "", err
 	}
 
 	return password, nil
-
 }
 
 // Delete - удалить пользователя
 func (s *storage) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM users WHERE id =$1`
 
-	_, err := s.db.Exec(ctx, query, id)
+	_, err := s.db.DB().ExecContext(ctx, db.Query{
+		Name:     "delete_user",
+		QueryRaw: query,
+	}, id)
 	if err != nil {
 		return err
 	}

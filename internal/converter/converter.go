@@ -69,7 +69,7 @@ func ModelUserToRPCGetUserResponse(req model.User) *pb.GetResponse {
 		Name:      req.Name,
 		Email:     req.Email,
 		Role:      pb.Role(req.Role),
-		CreatedAt: timestamppb.New(req.CreateAt),
-		UpdatedAt: timestamppb.New(req.UpdateAt),
+		CreatedAt: timestamppb.New(req.CreatedAt),
+		UpdatedAt: timestamppb.New(*req.UpdatedAt),
 	}
 }

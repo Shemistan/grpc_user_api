@@ -35,8 +35,8 @@ func TestGet(t *testing.T) {
 		Password:        "Password",
 		PasswordConfirm: "Password",
 		Role:            1,
-		CreateAt:        createdAt,
-		UpdateAt:        updatedAt,
+		CreatedAt:       createdAt,
+		UpdatedAt:       &updatedAt,
 	}
 
 	expect := converter.ModelUserToRPCGetUserResponse(user)

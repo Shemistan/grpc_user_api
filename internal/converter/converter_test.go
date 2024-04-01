@@ -217,11 +217,11 @@ func TestModelUserToRPCGetUserResponse(t *testing.T) {
 			UpdatedAt: timestamppb.New(updateAt),
 		}
 		actual := ModelUserToRPCGetUserResponse(model.User{
-			ID:       id,
-			Email:    "Email",
-			Role:     role,
-			CreateAt: createAT,
-			UpdateAt: updateAt,
+			ID:        id,
+			Email:     "Email",
+			Role:      role,
+			CreatedAt: createAT,
+			UpdatedAt: &updateAt,
 		})
 		assert.Equal(t, expected, actual)
 	})
@@ -236,12 +236,12 @@ func TestModelUserToRPCGetUserResponse(t *testing.T) {
 			UpdatedAt: timestamppb.New(updateAt),
 		}
 		actual := ModelUserToRPCGetUserResponse(model.User{
-			ID:       id,
-			Name:     "Name",
-			Email:    "Email",
-			Role:     role,
-			CreateAt: createAT,
-			UpdateAt: updateAt,
+			ID:        id,
+			Name:      "Name",
+			Email:     "Email",
+			Role:      role,
+			CreatedAt: createAT,
+			UpdatedAt: &updateAt,
 		})
 		assert.Equal(t, expected, actual)
 	})

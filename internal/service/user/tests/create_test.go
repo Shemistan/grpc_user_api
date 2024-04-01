@@ -34,8 +34,8 @@ func TestCreate(t *testing.T) {
 		Password:        "Password",
 		PasswordConfirm: "Password",
 		Role:            1,
-		CreateAt:        createdAt,
-		UpdateAt:        &updatedAt,
+		CreatedAt:       createdAt,
+		UpdatedAt:       &updatedAt,
 	}
 
 	t.Run("password mismatch", func(t *testing.T) {
@@ -46,8 +46,8 @@ func TestCreate(t *testing.T) {
 			Password:        "Password",
 			PasswordConfirm: "Password2",
 			Role:            1,
-			CreateAt:        createdAt,
-			UpdateAt:        &updatedAt,
+			CreatedAt:       createdAt,
+			UpdatedAt:       &updatedAt,
 		})
 		assert.ErrorIs(t, err, service_errors.PasswordMismatch)
 		assert.Equal(t, int64(0), actual)

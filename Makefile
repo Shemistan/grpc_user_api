@@ -65,6 +65,7 @@ test-coverage:
 	go test ./... -coverprofile=coverage.tmp.out -covermode count \
 	-coverpkg=github.com/Shemistan/grpc_user_api/internal/service/...,\
 	github.com/Shemistan/grpc_user_api/internal/api/...,github.com/Shemistan/grpc_user_api/internal/converter/...  \
+	github.com/Shemistan/grpc_user_api/internal/storage/user/converter/...\
 	-count 5
 	grep -v 'mocks\|config' coverage.tmp.out  > coverage.out
 	rm coverage.tmp.out

@@ -3,13 +3,14 @@ package tests
 import (
 	"context"
 	"errors"
-	pb "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/Shemistan/grpc_user_api/internal/api/user_v1"
 	"github.com/Shemistan/grpc_user_api/internal/service/mocks"
-	"github.com/stretchr/testify/assert"
+	pb "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
 )
 
 func TestDelete(t *testing.T) {

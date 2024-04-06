@@ -1,8 +1,6 @@
 package converter
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 	"testing"
 	"time"
 
@@ -10,6 +8,8 @@ import (
 
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	pb "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 func TestRPCCreateUserToModelUser(t *testing.T) {

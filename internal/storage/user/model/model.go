@@ -4,6 +4,9 @@ import (
 	"database/sql"
 )
 
+// Tablse
+const ()
+
 // User - основная модель пользователя
 type User struct {
 	ID        int64        `db:"id"`

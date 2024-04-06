@@ -1,4 +1,4 @@
-package api
+package user_v1
 
 import (
 	"github.com/Shemistan/grpc_user_api/internal/service"

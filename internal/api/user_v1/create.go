@@ -1,4 +1,4 @@
-package api
+package user_v1
 
 import (
 	"context"

@@ -1,8 +1,6 @@
 package converter
 
 import (
-	"time"
-
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	pb "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -66,16 +64,18 @@ func RPCUpdateUserToModelUpdateUser(req *pb.UpdateRequest) model.UpdateUser {
 
 // ModelUserToRPCGetUserResponse - конвертер из rpc в model
 func ModelUserToRPCGetUserResponse(req model.User) *pb.GetResponse {
-	var updatedAt time.Time
-	if req.UpdatedAt != nil {
-		updatedAt = *req.UpdatedAt
-	}
-	return &pb.GetResponse{
+	res := &pb.GetResponse{
 		Id:        req.ID,
 		Name:      req.Name,
 		Email:     req.Email,
 		Role:      pb.Role(req.Role),
 		CreatedAt: timestamppb.New(req.CreatedAt),
-		UpdatedAt: timestamppb.New(updatedAt),
+		UpdatedAt: timestamppb.New(*req.UpdatedAt),
 	}
+
+	if req.UpdatedAt != nil {
+		res.UpdatedAt = timestamppb.New(*req.UpdatedAt)
+	}
+
+	return res
 }

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/Shemistan/platform_common/pkg/db"
 
-	"github.com/Shemistan/grpc_user_api/internal/client/db"
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	def "github.com/Shemistan/grpc_user_api/internal/storage"
 	"github.com/Shemistan/grpc_user_api/internal/storage/user/converter"

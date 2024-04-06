@@ -2,10 +2,10 @@ package user
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"github.com/Shemistan/grpc_user_api/internal/model"
+	serviceErrors "github.com/Shemistan/grpc_user_api/internal/model/service_errors"
 	def "github.com/Shemistan/grpc_user_api/internal/service"
 	"github.com/Shemistan/grpc_user_api/internal/storage"
 	"github.com/Shemistan/grpc_user_api/internal/utils"
@@ -27,7 +27,7 @@ func NewService(storage storage.User, hasher utils.Hasher) def.User {
 // Create - создание пользователя
 func (s *service) Create(ctx context.Context, req model.User) (int64, error) {
 	if req.Password != req.PasswordConfirm {
-		return 0, errors.New("password mismatch")
+		return 0, serviceErrors.ErrPasswordMismatch
 	}
 
 	passwordHash, err := s.hasher.GetPasswordHash(req.Password)
@@ -50,11 +50,11 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 
 	if req.NewPassword != nil && req.NewPasswordConfirm != nil {
 		if *req.NewPassword != *req.NewPasswordConfirm {
-			return errors.New("password mismatch")
+			return serviceErrors.ErrPasswordMismatch
 		}
 
 		if req.OldPassword == nil {
-			return errors.New("old password not found")
+			return serviceErrors.ErrOldPasswordNotFound
 		}
 
 		ok, err := s.checkUserPassword(ctx, req.ID, *req.OldPassword)
@@ -63,7 +63,7 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 		}
 
 		if !ok {
-			return errors.New("old password not valid")
+			return serviceErrors.ErrOldPasswordNotValid
 		}
 
 		hash, err := s.hasher.GetPasswordHash(*req.NewPassword)
@@ -82,7 +82,7 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 	return nil
 }
 
-// GetUser - получение пользователя
+// GetUser - полуучение пользователя
 func (s *service) GetUser(ctx context.Context, id int64) (model.User, error) {
 	user, err := s.userStorage.GetUser(ctx, id)
 	if err != nil {

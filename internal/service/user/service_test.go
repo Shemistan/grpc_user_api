@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"testing"
 	"time"
@@ -12,7 +11,6 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	serviceErrors "github.com/Shemistan/grpc_user_api/internal/model/service_errors"
 	"github.com/Shemistan/grpc_user_api/internal/storage/mocks"
-	storageModel "github.com/Shemistan/grpc_user_api/internal/storage/user/model"
 	mocksHasher "github.com/Shemistan/grpc_user_api/internal/utils/mocks"
 )
 
@@ -222,22 +220,27 @@ func TestUpdate(t *testing.T) {
 	})
 
 	t.Run("without password update storage success", func(t *testing.T) {
-		user2 := user
-		user2.NewPassword = nil
-		storage.On("Update", ctx, model.UpdateUser{
-			ID:                 0,
-			Name:               nil,
-			Email:              nil,
-			OldPassword:        nil,
-			NewPassword:        nil,
-			NewPasswordConfirm: nil,
-			Role:               0,
-		}, nil).
+		var hash *string
+		user.NewPassword = nil
+
+		storage.On("Update", ctx, user, hash).
 			Return(nil).Once()
 
 		err := s.Update(ctx, user)
 
 		assert.NoError(t, err)
+	})
+
+	t.Run("without password update storage error", func(t *testing.T) {
+		var hash *string
+		user.NewPassword = nil
+
+		storage.On("Update", ctx, user, hash).
+			Return(testError).Once()
+
+		err := s.Update(ctx, user)
+
+		assert.ErrorIs(t, err, testError)
 	})
 
 }
@@ -253,7 +256,7 @@ func TestGetUser(t *testing.T) {
 
 	t.Run("storage error", func(t *testing.T) {
 		storage.On("GetUser", ctx, userID).
-			Return(storageModel.User{}, testError).Once()
+			Return(model.User{}, testError).Once()
 
 		_, err := s.GetUser(ctx, userID)
 
@@ -261,25 +264,8 @@ func TestGetUser(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
-		crateAt := time.Now()
-		updateAt := time.Now().Add(1 * time.Hour)
-
-		storage.On("GetUser", ctx, userID).
-			Return(storageModel.User{
-				ID:       userID,
-				Name:     "Name",
-				Email:    "Email",
-				Password: "Password",
-				Role:     12,
-				CreatedAt: sql.NullTime{
-					Time:  crateAt,
-					Valid: true,
-				},
-				UpdatedAt: sql.NullTime{
-					Time:  updateAt,
-					Valid: true,
-				},
-			}, nil).Once()
+		createdAt := time.Now()
+		updatedAt := time.Now().Add(1 * time.Hour)
 
 		expect := model.User{
 			ID:              userID,
@@ -288,9 +274,12 @@ func TestGetUser(t *testing.T) {
 			Password:        "Password",
 			PasswordConfirm: "",
 			Role:            12,
-			CreatedAt:       crateAt,
-			UpdatedAt:       &updateAt,
+			CreatedAt:       createdAt,
+			UpdatedAt:       &updatedAt,
 		}
+
+		storage.On("GetUser", ctx, userID).
+			Return(expect, nil).Once()
 
 		actual, err := s.GetUser(ctx, userID)
 

@@ -57,13 +57,49 @@ func (m *CreateRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Name
+	if l := utf8.RuneCountInString(m.GetName()); l < 1 || l > 50 {
+		err := CreateRequestValidationError{
+			field:  "Name",
+			reason: "value length must be between 1 and 50 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Email
+	if !_CreateRequest_Email_Pattern.MatchString(m.GetEmail()) {
+		err := CreateRequestValidationError{
+			field:  "Email",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Password
+	if utf8.RuneCountInString(m.GetPassword()) < 4 {
+		err := CreateRequestValidationError{
+			field:  "Password",
+			reason: "value length must be at least 4 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for PasswordConfirm
+	if utf8.RuneCountInString(m.GetPasswordConfirm()) < 4 {
+		err := CreateRequestValidationError{
+			field:  "PasswordConfirm",
+			reason: "value length must be at least 4 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Role
 
@@ -144,6 +180,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CreateRequestValidationError{}
+
+var _CreateRequest_Email_Pattern = regexp.MustCompile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
 
 // Validate checks the field values on CreateResponse with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
@@ -537,62 +575,34 @@ func (m *UpdateRequest) validate(all bool) error {
 
 	// no validation rules for Id
 
-	if all {
-		switch v := interface{}(m.GetName()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, UpdateRequestValidationError{
-					field:  "Name",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, UpdateRequestValidationError{
-					field:  "Name",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetName()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return UpdateRequestValidationError{
+	if wrapper := m.GetName(); wrapper != nil {
+
+		if l := utf8.RuneCountInString(wrapper.GetValue()); l < 1 || l > 50 {
+			err := UpdateRequestValidationError{
 				field:  "Name",
-				reason: "embedded message failed validation",
-				cause:  err,
+				reason: "value length must be between 1 and 50 runes, inclusive",
 			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
+
 	}
 
-	if all {
-		switch v := interface{}(m.GetEmail()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, UpdateRequestValidationError{
-					field:  "Email",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, UpdateRequestValidationError{
-					field:  "Email",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetEmail()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return UpdateRequestValidationError{
+	if wrapper := m.GetEmail(); wrapper != nil {
+
+		if !_UpdateRequest_Email_Pattern.MatchString(wrapper.GetValue()) {
+			err := UpdateRequestValidationError{
 				field:  "Email",
-				reason: "embedded message failed validation",
-				cause:  err,
+				reason: "value does not match regex pattern \"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$\"",
 			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
+
 	}
 
 	// no validation rules for Role
@@ -626,62 +636,34 @@ func (m *UpdateRequest) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetNewPassword()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, UpdateRequestValidationError{
-					field:  "NewPassword",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, UpdateRequestValidationError{
-					field:  "NewPassword",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetNewPassword()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return UpdateRequestValidationError{
+	if wrapper := m.GetNewPassword(); wrapper != nil {
+
+		if utf8.RuneCountInString(wrapper.GetValue()) < 4 {
+			err := UpdateRequestValidationError{
 				field:  "NewPassword",
-				reason: "embedded message failed validation",
-				cause:  err,
+				reason: "value length must be at least 4 runes",
 			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
+
 	}
 
-	if all {
-		switch v := interface{}(m.GetNewPasswordConfirm()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, UpdateRequestValidationError{
-					field:  "NewPasswordConfirm",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, UpdateRequestValidationError{
-					field:  "NewPasswordConfirm",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetNewPasswordConfirm()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return UpdateRequestValidationError{
+	if wrapper := m.GetNewPasswordConfirm(); wrapper != nil {
+
+		if utf8.RuneCountInString(wrapper.GetValue()) < 4 {
+			err := UpdateRequestValidationError{
 				field:  "NewPasswordConfirm",
-				reason: "embedded message failed validation",
-				cause:  err,
+				reason: "value length must be at least 4 runes",
 			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
+
 	}
 
 	if len(errors) > 0 {
@@ -761,6 +743,8 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = UpdateRequestValidationError{}
+
+var _UpdateRequest_Email_Pattern = regexp.MustCompile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
 
 // Validate checks the field values on DeleteRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, the first

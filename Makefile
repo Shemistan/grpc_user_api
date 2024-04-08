@@ -29,12 +29,13 @@ get-deps:
 
 
 generate:
+	mkdir -p pkg/swagger
 	make generate-user-api
+	$(LOCAL_BIN)/internal/statik -src=pkg/swagger/ -include='*.css,*.html,*.js,*.json,*.png'
 
 
 generate-user-api:
 	mkdir -p pkg/user_api_v1
-	mkdir -p pkg/swagger
 	protoc --proto_path api/user_api_v1 \
 	--go_out=pkg/user_api_v1 --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=bin/protoc-gen-go \
@@ -42,7 +43,7 @@ generate-user-api:
 	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
 	--validate_out lang=go:pkg/user_api_v1 --validate_opt=paths=source_relative \
 	--plugin=protoc-gen-validate=bin/protoc-gen-validate \
-	--grpc-gateway_out=pkg/note_v1 --grpc-gateway_opt=paths=source_relative \
+	--grpc-gateway_out=pkg/user_api_v1 --grpc-gateway_opt=paths=source_relative \
 	--plugin=protoc-gen-grpc-gateway=bin/protoc-gen-grpc-gateway \
 	--openapiv2_out=allow_merge=true,merge_file_name=api:pkg/swagger \
 	--plugin=protoc-gen-openapiv2=bin/protoc-gen-openapiv2 \

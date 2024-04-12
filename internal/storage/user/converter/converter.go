@@ -19,11 +19,15 @@ func ServiceUserToStorageUser(req serviceModel.User, passwordHash string) storag
 	}
 
 	return storageModel.User{
-		ID:        req.ID,
-		Name:      req.Name,
-		Email:     req.Email,
-		Password:  passwordHash,
-		Role:      req.Role,
+		ID:       req.ID,
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: passwordHash,
+		Role:     req.Role,
+		CreatedAt: sql.NullTime{
+			Time:  req.CreatedAt,
+			Valid: true,
+		},
 		UpdatedAt: updateAt,
 	}
 }

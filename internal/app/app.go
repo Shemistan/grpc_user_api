@@ -6,11 +6,11 @@ import (
 	"log"
 	"net"
 
+	"github.com/Shemistan/platform_common/pkg/closer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/Shemistan/grpc_user_api/internal/closer"
 	"github.com/Shemistan/grpc_user_api/internal/config"
 	desc "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
 )

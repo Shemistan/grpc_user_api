@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/Shemistan/platform_common/pkg/closer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -20,7 +21,7 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/config"
 	"github.com/Shemistan/grpc_user_api/internal/interceptor"
 	desc "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
-	_ "github.com/Shemistan/grpc_user_api/statik"
+	_ "github.com/Shemistan/grpc_user_api/statik" // необходим что бы подтянуть статику при инициализации
 )
 
 // App - структура приложения
@@ -57,7 +58,7 @@ func (a *App) Run() error {
 	}()
 
 	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(3)
 
 	go func() {
 		defer wg.Done()
@@ -77,14 +78,13 @@ func (a *App) Run() error {
 		}
 	}()
 
-	//go func() {
-	//	defer wg.Done()
-
-	err := a.runSwaggerServer()
-	if err != nil {
-		log.Fatalf("failed to run Swagger server: %v", err)
-	}
-	//}()
+	go func() {
+		defer wg.Done()
+		err := a.runSwaggerServer()
+		if err != nil {
+			log.Fatalf("failed to run Swagger server: %v", err)
+		}
+	}()
 
 	wg.Wait()
 
@@ -157,8 +157,9 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	})
 
 	a.httpServer = &http.Server{
-		Addr:    a.serviceProvider.HTTPConfig().Address(),
-		Handler: corsMiddleware.Handler(mux),
+		Addr:              a.serviceProvider.HTTPConfig().Address(),
+		Handler:           corsMiddleware.Handler(mux),
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	return nil
@@ -175,8 +176,9 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 	mux.HandleFunc("/api.swagger.json", serveSwaggerFile("/api.swagger.json"))
 
 	a.swaggerServer = &http.Server{
-		Addr:    a.serviceProvider.SwaggerConfig().Address(),
-		Handler: mux,
+		Addr:              a.serviceProvider.SwaggerConfig().Address(),
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	return nil
@@ -237,7 +239,7 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer file.Close()
+		defer file.Close() //nolint:errcheck
 
 		log.Printf("Read swagger file: %s", path)
 

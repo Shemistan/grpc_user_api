@@ -19,6 +19,7 @@ type swaggerConfig struct {
 	port string
 }
 
+// NewSwaggerConfig - новый конфиг для http сервера документации
 func NewSwaggerConfig() (config.Swagger, error) {
 	host := os.Getenv(swaggerHostEnvName)
 	if len(host) == 0 {

@@ -19,6 +19,7 @@ type httpConfig struct {
 	port string
 }
 
+// NewHTTPConfig - новый конфиг для http сервера
 func NewHTTPConfig() (config.HTTP, error) {
 	host := os.Getenv(httpHostEnvName)
 	if len(host) == 0 {

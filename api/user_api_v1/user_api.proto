@@ -5,21 +5,71 @@ package user_api_v1;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/Shemistan/grpc_user_api/pkg/user_api_v1;user_api_v1";
 
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "User API"
+    version: "1.0.0"
+    contact: {
+      name: "Alyzade Shamistan"
+      email: "stalyzade@avito.ru"
+    };
+  };
+
+  host: "localhost:8080",
+  schemes: HTTP,
+  schemes: HTTPS,
+  consumes: "application/json",
+  produces: "application/json",
+};
+
+
 service UserV1 {
-  rpc Create(CreateRequest) returns (CreateResponse);
-  rpc Get(GetRequest) returns (GetResponse);
-  rpc Update(UpdateRequest) returns (google.protobuf.Empty);
-  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+  rpc Create(CreateRequest) returns (CreateResponse){
+    option (google.api.http) = {
+      post: "/user/v1"
+      body: "*"
+    };
+  }
+
+  rpc Get(GetRequest) returns (GetResponse){
+    option (google.api.http) = {
+      get: "/user/v1"
+    };
+  }
+
+  rpc Update(UpdateRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      patch: "/user/v1"
+      body: "*"
+    };
+  }
+
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      delete: "/user/v1"
+    };
+  }
 }
 
 message CreateRequest{
-  string name = 1;
-  string email = 2;
-  string password = 3;
-  string password_confirm = 4;
+  // Валидация имени: не более 50 символов
+  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 50}];
+
+  // Валидация email: должен быть правильным email адресом
+  string email = 2 [(validate.rules).string = {pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"}];
+
+  // Валидация пароля: не менее 4 символов, минимум 1 заглавная буква, 1 цифра
+  string password = 3 [(validate.rules).string = {min_len: 4}];
+
+  // Валидация подтверждения пароля: должен совпадать с паролем
+  string password_confirm = 4 [(validate.rules).string = {min_len: 4}];
+
   Role role = 5;
 
 }
@@ -35,8 +85,8 @@ message GetRequest {
 
 message GetResponse{
   int64 id = 1;
-  string name = 2;
-  string email = 3;
+  string name = 2 ;
+  string email = 3 ;
   Role role = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
@@ -44,12 +94,12 @@ message GetResponse{
 
 message UpdateRequest{
   int64 id = 1;
-  google.protobuf.StringValue name = 2;
-  google.protobuf.StringValue email = 3;
+  google.protobuf.StringValue name = 2 [(validate.rules).string = {min_len: 1, max_len: 50}];
+  google.protobuf.StringValue email = 3 [(validate.rules).string = {pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"}];
   Role role = 4;
   google.protobuf.StringValue old_password = 5;
-  google.protobuf.StringValue new_password = 6;
-  google.protobuf.StringValue new_password_confirm = 7;
+  google.protobuf.StringValue new_password = 6  [(validate.rules).string = {min_len: 4}];
+  google.protobuf.StringValue new_password_confirm = 7  [(validate.rules).string = {min_len: 4}];
 }
 
 message DeleteRequest {

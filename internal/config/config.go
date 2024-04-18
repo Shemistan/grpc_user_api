@@ -28,3 +28,13 @@ func Load(path string) error {
 
 	return nil
 }
+
+// HTTP конфиг
+type HTTP interface {
+	Address() string
+}
+
+// Swagger конфиг
+type Swagger interface {
+	Address() string
+}

@@ -44,7 +44,7 @@ func (s *service) Create(ctx context.Context, req model.User) (int64, error) {
 	return userID, nil
 }
 
-// Update - - обновление пользователя
+// Update - обновление пользователя
 func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 	var passwordHash *string
 

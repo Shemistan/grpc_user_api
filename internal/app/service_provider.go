@@ -23,6 +23,8 @@ import (
 type serviceProvider struct {
 	pgConfig         config.PGConfig
 	grpcConfig       config.GRPCConfig
+	httpConfig       config.HTTP
+	swaggerConfig    config.Swagger
 	secretHashConfig config.SecretHashConfig
 
 	dbClient  db.Client
@@ -76,6 +78,32 @@ func (s *serviceProvider) SecretHashConfig() config.SecretHashConfig {
 	}
 
 	return s.secretHashConfig
+}
+
+func (s *serviceProvider) HTTPConfig() config.HTTP {
+	if s.httpConfig == nil {
+		cfg, err := env.NewHTTPConfig()
+		if err != nil {
+			log.Fatalf("failed to get http config: %s", err.Error())
+		}
+
+		s.httpConfig = cfg
+	}
+
+	return s.httpConfig
+}
+
+func (s *serviceProvider) SwaggerConfig() config.Swagger {
+	if s.swaggerConfig == nil {
+		cfg, err := env.NewSwaggerConfig()
+		if err != nil {
+			log.Fatalf("failed to get http config: %s", err.Error())
+		}
+
+		s.swaggerConfig = cfg
+	}
+
+	return s.swaggerConfig
 }
 
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {

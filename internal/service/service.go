@@ -13,3 +13,14 @@ type User interface {
 	GetUser(ctx context.Context, id int64) (model.User, error)
 	Delete(ctx context.Context, id int64) error
 }
+
+type Auth interface {
+	Login(ctx context.Context, req model.LoginRequest) (model.LoginResponse, error)
+	GetRefreshToken(ctx context.Context, req string) (string, error)
+	GetAccessToken(ctx context.Context, req string) (string, error)
+}
+
+type Access interface {
+	Check(ctx context.Context, req string) error
+	AddOrUpdateAccess(ctx context.Context, req model.AccessRequest) error
+}

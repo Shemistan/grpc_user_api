@@ -5,10 +5,10 @@ go 1.20
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/Shemistan/platform_common v1.0.1
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v1.0.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/joho/godotenv v1.5.1
-	github.com/olezhek28/microservices_course/week_5 v0.0.0-20240111155833-b2cb6d36745b
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
 	github.com/rs/cors v1.10.1

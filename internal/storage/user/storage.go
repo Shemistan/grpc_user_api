@@ -96,6 +96,22 @@ func (s *storage) GetUser(ctx context.Context, id int64) (model.User, error) {
 	return converter.StorageUserToServiceUser(user), nil
 }
 
+// GetUserByEmail - получить пользователя по email
+func (s *storage) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
+	query := fmt.Sprintf(`SELECT  id, name, email, password, role, created_at, updated_at FROM %s WHERE email = $1`, email)
+
+	var user storageModel.User
+	err := s.db.DB().ScanOneContext(ctx, &user, db.Query{
+		Name:     "get_user",
+		QueryRaw: query,
+	}, email)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return converter.StorageUserToServiceUser(user), nil
+}
+
 // GetPasswordHash - получить hash пароля
 func (s *storage) GetPasswordHash(ctx context.Context, id int64) (string, error) {
 	query := fmt.Sprintf(`SELECT password FROM %s WHERE id = $1`, tableUsers)

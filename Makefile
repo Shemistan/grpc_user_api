@@ -32,7 +32,8 @@ generate:
 	mkdir -p pkg/swagger
 	make generate-user-api
 	$(LOCAL_BIN)/internal/statik -src=pkg/swagger/ -include='*.css,*.html,*.js,*.json,*.png'
-
+	make generate-auth-api
+	make generate-access-api
 
 generate-user-api:
 	mkdir -p pkg/user_api_v1
@@ -49,6 +50,23 @@ generate-user-api:
 	--plugin=protoc-gen-openapiv2=bin/protoc-gen-openapiv2 \
 	api/user_api_v1/user_api.proto
 
+generate-auth-api:
+	mkdir -p pkg/auth_api_v1
+	protoc --proto_path api/auth_api_v1 \
+	--go_out=pkg/auth_api_v1 --go_opt=paths=source_relative \
+	--plugin=protoc-gen-go=bin/protoc-gen-go \
+	--go-grpc_out=pkg/auth_api_v1 --go-grpc_opt=paths=source_relative \
+	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
+	api/auth_api_v1/auth_api.proto
+
+generate-access-api:
+	mkdir -p pkg/access_api_v1
+	protoc --proto_path api/access_api_v1 \
+	--go_out=pkg/access_api_v1 --go_opt=paths=source_relative \
+	--plugin=protoc-gen-go=bin/protoc-gen-go \
+	--go-grpc_out=pkg/access_api_v1 --go-grpc_opt=paths=source_relative \
+	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
+	api/access_api_v1/access_api.proto
 
 build:
 	GOOS=linux GOARCH=amd64 go build -o service_linux cmd/grpc_server/main.go
@@ -70,6 +88,7 @@ local-migration-up:
 
 local-migration-down:
 	./bin/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} down -v
+
 
 .PHONY: test-coverage
 test-coverage:

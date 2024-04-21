@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package access_api_v1;
+
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+
+option go_package = "github.com/Shemistan/grpc_user_api/pkg/access_api_v1;access_api_v1";
+
+service AccessV1 {
+  rpc Check(CheckRequest) returns (google.protobuf.Empty);
+  rpc AddOrUpdateAccess(AddOrUpdateAccessRequest)returns (google.protobuf.Empty);
+
+}
+
+message CheckRequest {
+  string endpoint_address = 1;
+}
+
+message AddOrUpdateAccessRequest{
+  int64 role  = 1 [(validate.rules).message = { required: true }];
+  string url = 2 [(validate.rules).message = { required: true }];
+  bool is_access = 3;
+}

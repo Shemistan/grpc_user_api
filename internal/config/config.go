@@ -1,13 +1,16 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 const (
+	//RefreshTokenExpiration - TTL токена
 	RefreshTokenExpiration = 3 * 24 * time.Hour
-	AccessTokenExpiration  = 5 * time.Hour
+	//AccessTokenExpiration - TTL токена
+	AccessTokenExpiration = 5 * time.Hour
 )
 
 // GRPCConfig конфиг
@@ -65,6 +68,7 @@ type SecretAccessTokenConfig interface {
 	SecretKey() string
 }
 
+// TokenServiceConfig конфиг
 type TokenServiceConfig struct {
 	RefreshTokenSecretKey  string
 	AccessTokenSecretKey   string

@@ -1,13 +1,13 @@
 package utils
 
 import (
-	"github.com/Shemistan/grpc_user_api/internal/utils"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
 
 	"github.com/Shemistan/grpc_user_api/internal/model"
+	"github.com/Shemistan/grpc_user_api/internal/utils"
 )
 
 // service структура, реализующая интерфейс Hasher.

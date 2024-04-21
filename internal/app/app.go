@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+
 	"io"
 	"log"
 	"net"
@@ -63,7 +64,7 @@ func (a *App) Run() error {
 	}()
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
+	wg.Add(5)
 
 	go func() {
 		defer wg.Done()
@@ -121,6 +122,8 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initGRPCUserServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
+		a.initGRPCAuthServer,
+		a.initGRPCAccessServer,
 	}
 
 	for _, f := range inits {
@@ -156,32 +159,6 @@ func (a *App) initGRPCUserServer(ctx context.Context) error {
 	reflection.Register(a.grpcUserServer)
 
 	descUser.RegisterUserV1Server(a.grpcUserServer, a.serviceProvider.UserAPI(ctx))
-
-	return nil
-}
-
-func (a *App) initGRPCAuthServer(ctx context.Context) error {
-	a.grpcAuthServer = grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
-	)
-
-	reflection.Register(a.grpcAuthServer)
-
-	descAuth.RegisterAuthV1Server(a.grpcAuthServer, a.serviceProvider.AuthAPI(ctx))
-
-	return nil
-}
-
-func (a *App) initGRPCAccessServer(ctx context.Context) error {
-	a.grpcAccessServer = grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
-	)
-
-	reflection.Register(a.grpcUserServer)
-
-	descAccess.RegisterAccessV1Server(a.grpcAccessServer, a.serviceProvider.AccessAPI(ctx))
 
 	return nil
 }
@@ -229,6 +206,32 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
+
+	return nil
+}
+
+func (a *App) initGRPCAuthServer(ctx context.Context) error {
+	a.grpcAuthServer = grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+	)
+
+	reflection.Register(a.grpcAuthServer)
+
+	descAuth.RegisterAuthV1Server(a.grpcAuthServer, a.serviceProvider.AuthAPI(ctx))
+
+	return nil
+}
+
+func (a *App) initGRPCAccessServer(ctx context.Context) error {
+	a.grpcAccessServer = grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+	)
+
+	reflection.Register(a.grpcAccessServer)
+
+	descAccess.RegisterAccessV1Server(a.grpcAccessServer, a.serviceProvider.AccessAPI(ctx))
 
 	return nil
 }

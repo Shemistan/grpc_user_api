@@ -28,9 +28,8 @@ var (
 	ErrAccessTokenInvalid = status.Errorf(codes.Aborted, "invalid access token")
 	// ErrRefreshTokenInvalid - невалидный токен
 	ErrRefreshTokenInvalid = status.Errorf(codes.Aborted, "invalid refresh token")
-	// ErrCheckAccess - не удалось проверить токен
-	ErrCheckAccess = errors.New("failed to check access")
-
 	// ErrGenerateToken - не удалось создать токен
 	ErrGenerateToken = errors.New("failed to generate token")
+	// ErrNoRows
+	ErrNoRows = errors.New("no rows in result")
 )

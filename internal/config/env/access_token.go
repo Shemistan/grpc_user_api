@@ -15,7 +15,7 @@ type secretAccessTokenConfig struct {
 	secret string
 }
 
-// NewSecretHashConfig - получить
+// NewSecretAccessTokenConfig - получить кофиг токена
 func NewSecretAccessTokenConfig() (config.SecretAccessTokenConfig, error) {
 	secret := os.Getenv(accessSecretEnvName)
 	if len(secret) == 0 {

@@ -2,8 +2,6 @@ package app
 
 import (
 	"context"
-	accessService "github.com/Shemistan/grpc_user_api/internal/service/access"
-	accessStorage "github.com/Shemistan/grpc_user_api/internal/storage/access"
 	"log"
 
 	"github.com/Shemistan/platform_common/pkg/closer"
@@ -17,9 +15,11 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/config"
 	"github.com/Shemistan/grpc_user_api/internal/config/env"
 	"github.com/Shemistan/grpc_user_api/internal/service"
+	accessService "github.com/Shemistan/grpc_user_api/internal/service/access"
 	authService "github.com/Shemistan/grpc_user_api/internal/service/auth"
 	userService "github.com/Shemistan/grpc_user_api/internal/service/user"
 	"github.com/Shemistan/grpc_user_api/internal/storage"
+	accessStorage "github.com/Shemistan/grpc_user_api/internal/storage/access"
 	userStorage "github.com/Shemistan/grpc_user_api/internal/storage/user"
 	"github.com/Shemistan/grpc_user_api/internal/utils"
 	"github.com/Shemistan/grpc_user_api/internal/utils/hasher"

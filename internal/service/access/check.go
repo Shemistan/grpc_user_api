@@ -2,12 +2,9 @@ package auth
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"strings"
-	"sync"
 
 	"google.golang.org/grpc/metadata"
 
@@ -59,16 +56,8 @@ func (s *service) checkTokenAndGetClaims(ctx context.Context) (*model.UserClaims
 }
 
 func (s *service) checkAccessibleRoles(ctx context.Context, role int64, url string) (bool, error) {
-	if s.cache == nil {
-		err := s.initAccessibleRoles(ctx)
-		if err != nil {
-			log.Println("failed to init accessible roles", err)
-			return false, serviceErrors.ErrCheckAccess
-		}
-	}
-
 	if v, okRole := s.cache.accessibleRoles[role]; okRole {
-		if isAccess, okUrl := v[url]; okUrl {
+		if isAccess, okURL := v[url]; okURL {
 			return isAccess, nil
 		}
 	}
@@ -78,7 +67,7 @@ func (s *service) checkAccessibleRoles(ctx context.Context, role int64, url stri
 		URL:  url,
 	})
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
+		if !strings.HasPrefix(err.Error(), serviceErrors.ErrNoRows.Error()) {
 			return false, err
 		}
 
@@ -92,9 +81,11 @@ func (s *service) checkAccessibleRoles(ctx context.Context, role int64, url stri
 				log.Println(fmt.Sprintf("failed  to add new access for role(%d) and url(%s)", role, url), err)
 			}
 
-			s.cache.Lock()
-			s.cache.accessibleRoles[role][url] = false
-			s.cache.Unlock()
+			s.addInCache(model.AccessRequest{
+				Role:     role,
+				URL:      url,
+				IsAccess: false,
+			})
 		}(ctx, role, url)
 
 		return false, nil
@@ -103,37 +94,13 @@ func (s *service) checkAccessibleRoles(ctx context.Context, role int64, url stri
 	return access.IsAccess, nil
 }
 
-func (s *service) initAccessibleRoles(ctx context.Context) error {
-	roles, err := s.accessStorage.GetAllAccess(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Ролей предполагается не так много, по этому эффективнее сделать такой кэш, что бы не плодить много хэштаблиц
-	rolesMap := make(map[int64]map[string]bool)
-
-	for _, v := range roles {
-		if _, ok := rolesMap[v.Role]; !ok {
-			urlsMap := make(map[string]bool)
-			rolesMap[v.Role] = urlsMap
-		}
-
-		rolesMap[v.Role][v.URL] = v.IsAccess
-	}
-
-	s.cache = &Cache{
-		Mutex:           &sync.Mutex{},
-		accessibleRoles: rolesMap,
-	}
-
-	return nil
-}
-
 func (s *service) addNewAccess(ctx context.Context, req model.AccessRequest) error {
 	err := s.accessStorage.AddAccess(ctx, req)
 	if err != nil {
 		return err
 	}
+
+	s.addInCache(req)
 
 	return nil
 }

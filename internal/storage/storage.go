@@ -16,6 +16,7 @@ type User interface {
 	GetUserByEmail(ctx context.Context, email string) (model.User, error)
 }
 
+// Access - для работы с доступами
 type Access interface {
 	AddAccess(ctx context.Context, req model.AccessRequest) error
 	UpdateAccess(ctx context.Context, req model.AccessRequest) error

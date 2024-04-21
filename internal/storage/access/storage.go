@@ -12,7 +12,7 @@ type storage struct {
 }
 
 const (
-	tableUrlAccess = "url_access"
+	tableURLAccess = "url_access"
 )
 
 // NewStorage - новый storage

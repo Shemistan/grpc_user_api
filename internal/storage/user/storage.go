@@ -98,7 +98,7 @@ func (s *storage) GetUser(ctx context.Context, id int64) (model.User, error) {
 
 // GetUserByEmail - получить пользователя по email
 func (s *storage) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
-	query := fmt.Sprintf(`SELECT  id, name, email, password, role, created_at, updated_at FROM %s WHERE email = $1`, email)
+	query := fmt.Sprintf(`SELECT  id, name, email, password, role, created_at, updated_at FROM %s WHERE email = $1`, tableUsers)
 
 	var user storageModel.User
 	err := s.db.DB().ScanOneContext(ctx, &user, db.Query{

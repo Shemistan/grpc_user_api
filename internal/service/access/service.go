@@ -18,6 +18,7 @@ type service struct {
 	cache *Cache
 }
 
+// Cache - кэш для хранения доступов
 type Cache struct {
 	*sync.Mutex
 	accessibleRoles map[int64]map[string]bool
@@ -36,6 +37,8 @@ func NewService(
 		accessTokenSecretKey: accessTokenSecretKey,
 	}
 
+	s.initCache()
+
 	go func(s *service) {
 		err := s.initAccessibleRoles(context.Background())
 		if err != nil {
@@ -44,4 +47,16 @@ func NewService(
 	}(s)
 
 	return s
+}
+
+func (s *service) initCache() {
+	if s.cache == nil {
+		// Ролей предполагается не так много, по этому эффективнее сделать такой кэш, что бы не плодить много хэштаблиц
+		cache := make(map[int64]map[string]bool)
+
+		s.cache = &Cache{
+			Mutex:           &sync.Mutex{},
+			accessibleRoles: cache,
+		}
+	}
 }

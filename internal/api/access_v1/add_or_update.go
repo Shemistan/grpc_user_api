@@ -2,6 +2,7 @@ package user_v1
 
 import (
 	"context"
+
 	"github.com/Shemistan/grpc_user_api/internal/converter"
 	"google.golang.org/protobuf/types/known/emptypb"
 

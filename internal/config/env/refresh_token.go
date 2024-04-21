@@ -15,7 +15,7 @@ type secretRefreshTokenConfig struct {
 	secret string
 }
 
-// NewSecretHashConfig - получить
+// NewSecretRefreshTokenConfig - получить кофиг токена
 func NewSecretRefreshTokenConfig() (config.SecretRefreshTokenConfig, error) {
 	secret := os.Getenv(refreshSecretEnvName)
 	if len(secret) == 0 {

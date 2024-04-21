@@ -2,21 +2,22 @@ package auth
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/Shemistan/grpc_user_api/internal/model"
+	serviceErrors "github.com/Shemistan/grpc_user_api/internal/model/service_errors"
 )
 
 func (s *service) AddOrUpdateAccess(ctx context.Context, req model.AccessRequest) error {
 	access, err := s.accessStorage.GetAccess(ctx, req)
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
+		if !strings.HasPrefix(err.Error(), serviceErrors.ErrNoRows.Error()) {
 			log.Println(fmt.Sprintf("failed  to add new access for role(%d) and url(%s)", req.Role, req.URL), err)
 			return err
 		}
+
 		err = s.accessStorage.AddAccess(ctx, req)
 		if err != nil {
 			log.Println(fmt.Sprintf("failed  to add new access for role(%d) and url(%s)", req.Role, req.URL), err)
@@ -34,9 +35,7 @@ func (s *service) AddOrUpdateAccess(ctx context.Context, req model.AccessRequest
 		}
 	}
 
-	s.cache.Lock()
-	s.cache.accessibleRoles[req.Role][req.URL] = req.IsAccess
-	s.cache.Unlock()
+	s.addInCache(req)
 
 	return nil
 }

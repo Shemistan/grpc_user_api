@@ -12,6 +12,7 @@ type Hasher interface {
 	CheckPassword(hash, password string) bool
 }
 
+// TokenProvider - интерфейс обработчика токена
 type TokenProvider interface {
 	GenerateToken(info model.UserInfo, secretKey []byte, duration time.Duration) (string, error)
 	VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims, error)

@@ -84,7 +84,7 @@ func ModelUserToRPCGetUserResponse(req model.User) *pbUser.GetResponse {
 
 // RPCAccessRequestToServiceAccessRequest - конвертер из rpc в model
 func RPCAccessRequestToServiceAccessRequest(req *pbAccess.AddOrUpdateAccessRequest) model.AccessRequest {
-	if req != nil {
+	if req == nil {
 		return model.AccessRequest{}
 	}
 
@@ -95,9 +95,9 @@ func RPCAccessRequestToServiceAccessRequest(req *pbAccess.AddOrUpdateAccessReque
 	}
 }
 
-// RPCAccessRequestToServiceAccessRequest - конвертер из rpc в model
+// RPCLoginToServiceLogin - конвертер из rpc в model
 func RPCLoginToServiceLogin(req *pbAuth.LoginRequest) model.LoginRequest {
-	if req != nil {
+	if req == nil {
 		return model.LoginRequest{}
 	}
 

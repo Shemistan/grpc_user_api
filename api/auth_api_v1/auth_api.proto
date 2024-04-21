@@ -14,8 +14,8 @@ service AuthV1 {
 }
 
 message LoginRequest {
-  string login = 1 [(validate.rules).message = { required: true }];
-  string password = 2 [(validate.rules).message = { required: true }];
+  string login = 1  [(validate.rules).string = {pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"}];
+  string password = 2  [(validate.rules).string = { min_len: 4}];
 }
 
 message LoginResponse {
@@ -24,7 +24,7 @@ message LoginResponse {
 }
 
 message GetRefreshTokenRequest {
-  string refresh_token = 1 [(validate.rules).message = { required: true }];
+  string refresh_token = 1  [(validate.rules).string = { min_len: 1}];
 }
 
 message GetRefreshTokenResponse {
@@ -32,7 +32,7 @@ message GetRefreshTokenResponse {
 }
 
 message GetAccessTokenRequest {
-  string access_token = 1 [(validate.rules).message = { required: true }];
+  string access_token = 1  [(validate.rules).string = { min_len: 1}];
 }
 
 message GetAccessTokenResponse {

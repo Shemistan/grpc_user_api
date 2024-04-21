@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ExamplePath     = "/auth_v1.AuthV1/Get"
+	//TokenAuthPrefix - префикс для токена в хэдере
 	TokenAuthPrefix = "Bearer "
 )
 
@@ -34,27 +34,32 @@ type UpdateUser struct {
 	Role               int64
 }
 
+// UserInfo - информация о пользователе для авторизации
 type UserInfo struct {
 	Login string `json:"login"`
 	Role  int64  `json:"role"`
 }
 
+// UserClaims - структура для работы токена
 type UserClaims struct {
 	jwt.StandardClaims
 	Login string `json:"login"`
 	Role  int64  `json:"role"`
 }
 
+// LoginRequest - запрос для авторизации
 type LoginRequest struct {
 	Login    string
 	Password string
 }
 
+// LoginResponse - ответ при авторизации
 type LoginResponse struct {
 	RefreshToken string
 	AccessToken  string
 }
 
+// AccessRequest - запрос длч обработки доступов
 type AccessRequest struct {
 	Role     int64  `db:"role"`
 	URL      string `db:"url"`

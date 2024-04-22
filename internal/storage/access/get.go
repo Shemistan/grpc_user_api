@@ -11,13 +11,13 @@ import (
 
 // GetAccess - получить информацию о доступе
 func (s *storage) GetAccess(ctx context.Context, req model.AccessRequest) (model.AccessRequest, error) {
-	query := fmt.Sprintf(`SELECT role, url, is_access FROM %s WHERE role = $1 AND url=$2`, tableURLAccess)
+	query := fmt.Sprintf(`SELECT role, resource, is_access FROM %s WHERE role = $1 AND url=$2`, tableResourceAccess)
 
 	var res model.AccessRequest
 	err := s.db.DB().ScanOneContext(ctx, &res, db.Query{
 		Name:     "get_access",
 		QueryRaw: query,
-	}, req.Role, req.URL)
+	}, req.Role, req.Resource)
 	if err != nil {
 		return res, err
 	}
@@ -27,7 +27,7 @@ func (s *storage) GetAccess(ctx context.Context, req model.AccessRequest) (model
 
 // GetAllAccess - получить все доступы
 func (s *storage) GetAllAccess(ctx context.Context) ([]model.AccessRequest, error) {
-	query := fmt.Sprintf(`SELECT role, url, is_access FROM %s `, tableURLAccess)
+	query := fmt.Sprintf(`SELECT role, resource, is_access FROM %s `, tableResourceAccess)
 
 	var res []model.AccessRequest
 	err := s.db.DB().ScanOneContext(ctx, &res, db.Query{

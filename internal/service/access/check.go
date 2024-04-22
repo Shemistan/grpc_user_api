@@ -13,13 +13,13 @@ import (
 )
 
 // Check - проверить доступ
-func (s *service) Check(ctx context.Context, url string) error {
+func (s *service) Check(ctx context.Context, resource string) error {
 	claims, err := s.checkTokenAndGetClaims(ctx)
 	if err != nil {
 		return err
 	}
 
-	ok, err := s.checkAccessibleRoles(ctx, claims.Role, url)
+	ok, err := s.checkAccessibleRoles(ctx, claims.Role, resource)
 	if err != nil {
 		return err
 	}
@@ -55,38 +55,38 @@ func (s *service) checkTokenAndGetClaims(ctx context.Context) (*model.UserClaims
 	return claims, nil
 }
 
-func (s *service) checkAccessibleRoles(ctx context.Context, role int64, url string) (bool, error) {
+func (s *service) checkAccessibleRoles(ctx context.Context, role int64, resource string) (bool, error) {
 	if v, okRole := s.cache.accessibleRoles[role]; okRole {
-		if isAccess, okURL := v[url]; okURL {
+		if isAccess, okResource := v[resource]; okResource {
 			return isAccess, nil
 		}
 	}
 
 	access, err := s.accessStorage.GetAccess(ctx, model.AccessRequest{
-		Role: role,
-		URL:  url,
+		Role:     role,
+		Resource: resource,
 	})
 	if err != nil {
 		if !strings.HasPrefix(err.Error(), serviceErrors.ErrNoRows.Error()) {
 			return false, err
 		}
 
-		go func(ctx context.Context, role int64, url string) {
+		go func(ctx context.Context, role int64, resource string) {
 			errAdd := s.addNewAccess(ctx, model.AccessRequest{
-				Role: role,
-				URL:  url,
+				Role:     role,
+				Resource: resource,
 			})
 
 			if errAdd != nil {
-				log.Println(fmt.Sprintf("failed  to add new access for role(%d) and url(%s)", role, url), err)
+				log.Println(fmt.Sprintf("failed  to add new access for role(%d) and resource(%s)", role, resource), err)
 			}
 
 			s.addInCache(model.AccessRequest{
 				Role:     role,
-				URL:      url,
+				Resource: resource,
 				IsAccess: false,
 			})
-		}(ctx, role, url)
+		}(ctx, role, resource)
 
 		return false, nil
 	}

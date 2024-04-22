@@ -30,6 +30,6 @@ var (
 	ErrRefreshTokenInvalid = status.Errorf(codes.Aborted, "invalid refresh token")
 	// ErrGenerateToken - не удалось создать токен
 	ErrGenerateToken = errors.New("failed to generate token")
-	// ErrNoRows
+	// ErrNoRows - нет соотвествующих данных в хранилище
 	ErrNoRows = errors.New("no rows in result")
 )

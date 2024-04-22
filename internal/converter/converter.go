@@ -90,7 +90,7 @@ func RPCAccessRequestToServiceAccessRequest(req *pbAccess.AddOrUpdateAccessReque
 
 	return model.AccessRequest{
 		Role:     req.GetRole(),
-		URL:      req.GetUrl(),
+		Resource: req.GetResource(),
 		IsAccess: req.GetIsAccess(),
 	}
 }

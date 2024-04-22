@@ -10,7 +10,7 @@ import (
 
 // Check - проверка доступа к ресурсу
 func (a *Access) Check(ctx context.Context, req *pb.CheckRequest) (*emptypb.Empty, error) {
-	err := a.service.Check(ctx, req.GetEndpointAddress())
+	err := a.service.Check(ctx, req.GetResource())
 	if err != nil {
 		return nil, err
 	}

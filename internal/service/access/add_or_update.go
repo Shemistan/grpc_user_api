@@ -14,13 +14,13 @@ func (s *service) AddOrUpdateAccess(ctx context.Context, req model.AccessRequest
 	access, err := s.accessStorage.GetAccess(ctx, req)
 	if err != nil {
 		if !strings.HasPrefix(err.Error(), serviceErrors.ErrNoRows.Error()) {
-			log.Println(fmt.Sprintf("failed  to add new access for role(%d) and url(%s)", req.Role, req.URL), err)
+			log.Println(fmt.Sprintf("failed  to add new access for role(%d) and resource(%s)", req.Role, req.Resource), err)
 			return err
 		}
 
 		err = s.accessStorage.AddAccess(ctx, req)
 		if err != nil {
-			log.Println(fmt.Sprintf("failed  to add new access for role(%d) and url(%s)", req.Role, req.URL), err)
+			log.Println(fmt.Sprintf("failed  to add new access for role(%d) and resource(%s)", req.Role, req.Resource), err)
 			return err
 		}
 
@@ -30,7 +30,7 @@ func (s *service) AddOrUpdateAccess(ctx context.Context, req model.AccessRequest
 	if access.IsAccess != req.IsAccess {
 		err = s.accessStorage.UpdateAccess(ctx, req)
 		if err != nil {
-			log.Println(fmt.Sprintf("failed  to update access for role(%d) and url(%s)", req.Role, req.URL), err)
+			log.Println(fmt.Sprintf("failed  to update access for role(%d) and resource(%s)", req.Role, req.Resource), err)
 			return err
 		}
 	}

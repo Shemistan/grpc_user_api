@@ -62,6 +62,6 @@ type LoginResponse struct {
 // AccessRequest - запрос длч обработки доступов
 type AccessRequest struct {
 	Role     int64  `db:"role"`
-	URL      string `db:"url"`
+	Resource string `db:"resource"`
 	IsAccess bool   `db:"is_access"`
 }

@@ -9,17 +9,17 @@ import (
 // В идеале нужна очистка кэша от переполнения, но по идее при обновлении он чистится и актуализируется
 func (s *service) addInCache(req model.AccessRequest) {
 	if _, ok := s.cache.accessibleRoles[req.Role]; !ok {
-		urlsMap := make(map[string]bool)
+		ResourcesMap := make(map[string]bool)
 
 		s.cache.Lock()
-		s.cache.accessibleRoles[req.Role] = urlsMap
-		s.cache.accessibleRoles[req.Role][req.URL] = req.IsAccess
+		s.cache.accessibleRoles[req.Role] = ResourcesMap
+		s.cache.accessibleRoles[req.Role][req.Resource] = req.IsAccess
 		s.cache.Unlock()
 		return
 	}
 
 	s.cache.Lock()
-	s.cache.accessibleRoles[req.Role][req.URL] = req.IsAccess
+	s.cache.accessibleRoles[req.Role][req.Resource] = req.IsAccess
 	s.cache.Unlock()
 }
 

@@ -12,12 +12,12 @@ import (
 
 // AddAccess - добавить информацию о доступе
 func (s *storage) AddAccess(ctx context.Context, req model.AccessRequest) error {
-	query := fmt.Sprintf(`INSERT INTO %s( role ,url, is_access) VALUES ( $1, $2,$3);`, tableURLAccess)
+	query := fmt.Sprintf(`INSERT INTO %s( role ,resource, is_access) VALUES ( $1, $2,$3);`, tableResourceAccess)
 
 	_, err := s.db.DB().ExecContext(ctx, db.Query{
 		Name:     "add_access",
 		QueryRaw: query,
-	}, req.Role, req.URL, req.IsAccess)
+	}, req.Role, req.Resource, req.IsAccess)
 	if err != nil {
 		return err
 	}
@@ -27,14 +27,14 @@ func (s *storage) AddAccess(ctx context.Context, req model.AccessRequest) error 
 
 // UpdateAccess - изменить информацию о доступе
 func (s *storage) UpdateAccess(ctx context.Context, req model.AccessRequest) error {
-	qb := squirrel.Update(tableURLAccess).
+	qb := squirrel.Update(tableResourceAccess).
 		Set("role", req.Role).
-		Set("url", req.URL).
+		Set("resource", req.Resource).
 		Set("is_access", req.IsAccess)
 
 	qb = qb.Where(squirrel.And{
 		squirrel.Eq{"role": req.Role},
-		squirrel.Eq{"url": req.URL},
+		squirrel.Eq{"resource": req.Resource},
 	}).
 		PlaceholderFormat(squirrel.Dollar)
 

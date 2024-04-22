@@ -57,7 +57,7 @@ func (m *CheckRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for EndpointAddress
+	// no validation rules for Resource
 
 	if len(errors) > 0 {
 		return CheckRequestMultiError(errors)
@@ -160,9 +160,9 @@ func (m *AddOrUpdateAccessRequest) validate(all bool) error {
 
 	// no validation rules for Role
 
-	if utf8.RuneCountInString(m.GetUrl()) < 1 {
+	if utf8.RuneCountInString(m.GetResource()) < 1 {
 		err := AddOrUpdateAccessRequestValidationError{
-			field:  "Url",
+			field:  "Resource",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {

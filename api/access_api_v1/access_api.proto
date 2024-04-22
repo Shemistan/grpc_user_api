@@ -14,11 +14,11 @@ service AccessV1 {
 }
 
 message CheckRequest {
-  string endpoint_address = 1;
+  string resource = 1;
 }
 
 message AddOrUpdateAccessRequest{
   int64 role  = 1;
-  string url = 2 [(validate.rules).string = { min_len: 1}];
+  string resource = 2 [(validate.rules).string = { min_len: 1}];
   bool is_access = 3;
 }

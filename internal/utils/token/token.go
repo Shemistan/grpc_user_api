@@ -1,4 +1,4 @@
-package utils
+package token
 
 import (
 	"time"
@@ -10,16 +10,16 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/utils"
 )
 
-// service структура, реализующая интерфейс Hasher.
-type service struct {
+// tokenProvider структура, реализующая интерфейс Hasher.
+type tokenProvider struct {
 }
 
-// New создает новый экземпляр service с заданным секретным ключом.
+// New создает новый экземпляр tokenProvider с заданным секретным ключом.
 func New() utils.TokenProvider {
-	return &service{}
+	return &tokenProvider{}
 }
 
-func (s *service) GenerateToken(info model.UserInfo, secretKey []byte, duration time.Duration) (string, error) {
+func (s *tokenProvider) GenerateToken(info model.UserInfo, secretKey []byte, duration time.Duration) (string, error) {
 	claims := model.UserClaims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
@@ -33,7 +33,7 @@ func (s *service) GenerateToken(info model.UserInfo, secretKey []byte, duration 
 	return token.SignedString(secretKey)
 }
 
-func (s *service) VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims, error) {
+func (s *tokenProvider) VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims, error) {
 	token, err := jwt.ParseWithClaims(
 		tokenStr,
 		&model.UserClaims{},

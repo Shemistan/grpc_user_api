@@ -84,7 +84,10 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 
 // GetUser - полуучение пользователя
 func (s *service) GetUser(ctx context.Context, id int64) (model.User, error) {
-	user, err := s.userStorage.GetUser(ctx, id)
+	user, err := s.userStorage.GetUser(ctx, model.GetUserRequest{
+		ID:    &id,
+		Email: nil,
+	})
 	if err != nil {
 		return model.User{}, err
 	}

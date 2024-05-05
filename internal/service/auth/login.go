@@ -12,7 +12,10 @@ import (
 func (s *service) Login(ctx context.Context, req model.LoginRequest) (model.LoginResponse, error) {
 	var res model.LoginResponse
 
-	user, err := s.userStorage.GetUserByEmail(ctx, req.Login)
+	user, err := s.userStorage.GetUser(ctx, model.GetUserRequest{
+		ID:    nil,
+		Email: &req.Login,
+	})
 	if err != nil {
 		return res, err
 	}

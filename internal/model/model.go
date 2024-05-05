@@ -65,3 +65,8 @@ type AccessRequest struct {
 	Resource string `db:"resource"`
 	IsAccess bool   `db:"is_access"`
 }
+
+type GetUserRequest struct {
+	ID    *int64
+	Email *string
+}

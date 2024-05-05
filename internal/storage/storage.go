@@ -10,10 +10,9 @@ import (
 type User interface {
 	Create(ctx context.Context, req model.User, passwordHash string) (int64, error)
 	Update(ctx context.Context, req model.UpdateUser, passwordHash *string) error
-	GetUser(ctx context.Context, id int64) (model.User, error)
+	GetUser(ctx context.Context, req model.GetUserRequest) (model.User, error)
 	Delete(ctx context.Context, id int64) error
 	GetPasswordHash(ctx context.Context, id int64) (string, error)
-	GetUserByEmail(ctx context.Context, email string) (model.User, error)
 }
 
 // Access - для работы с доступами

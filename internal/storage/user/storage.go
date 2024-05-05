@@ -18,7 +18,14 @@ type storage struct {
 }
 
 const (
-	tableUsers = "users"
+	tableUsers      = "users"
+	columnRole      = "role"
+	columnName      = "name"
+	columnEmail     = "email"
+	columnPassword  = "password"
+	columnID        = "id"
+	columnCreatedAt = "id"
+	columnUpdatedAt = "id"
 )
 
 // NewStorage - новый storage
@@ -33,21 +40,21 @@ func NewStorage(db db.Client, txManager db.TxManager) def.User {
 func (s *storage) Update(ctx context.Context, req model.UpdateUser, passwordHash *string) error {
 	user := converter.ServiceUpdateUserToStorageUpdateUser(req, passwordHash)
 
-	qb := squirrel.Update(tableUsers).Set("role", user.Role)
+	qb := squirrel.Update(tableUsers).Set(columnRole, user.Role)
 
 	if user.Name != nil {
-		qb = qb.Set("name", *user.Name)
+		qb = qb.Set(columnName, *user.Name)
 	}
 
 	if user.Email != nil {
-		qb = qb.Set("email", *user.Email)
+		qb = qb.Set(columnEmail, *user.Email)
 	}
 
 	if user.Password != nil {
-		qb = qb.Set("password", *user.Password)
+		qb = qb.Set(columnPassword, *user.Password)
 	}
 
-	qb = qb.Where(squirrel.Eq{"id": user.ID}).PlaceholderFormat(squirrel.Dollar)
+	qb = qb.Where(squirrel.Eq{columnID: user.ID}).PlaceholderFormat(squirrel.Dollar)
 
 	query, args, err := qb.ToSql()
 	if err != nil {
@@ -64,13 +71,13 @@ func (s *storage) Update(ctx context.Context, req model.UpdateUser, passwordHash
 
 // GetUser - получить пользователя
 func (s *storage) GetUser(ctx context.Context, req model.GetUserRequest) (model.User, error) {
-	qb := squirrel.Select("id", "name", "email", "password", "role", "created_at", "updated_at").
+	qb := squirrel.Select(columnID, columnName, columnEmail, columnPassword, columnRole, columnCreatedAt, columnUpdatedAt).
 		From(tableUsers)
 
 	if req.ID != nil {
 		qb = qb.Where(squirrel.And{
 			squirrel.Eq{
-				"id": *req.ID,
+				columnID: *req.ID,
 			},
 		})
 	}
@@ -78,7 +85,7 @@ func (s *storage) GetUser(ctx context.Context, req model.GetUserRequest) (model.
 	if req.Email != nil {
 		qb = qb.Where(squirrel.And{
 			squirrel.Eq{
-				"email": *req.Email,
+				columnEmail: *req.Email,
 			},
 		})
 	}
@@ -106,7 +113,7 @@ func (s *storage) Create(ctx context.Context, req model.User, passwordHash strin
 
 	qb := squirrel.
 		Insert(tableUsers).
-		Columns("name", "email", "password", "role").
+		Columns(columnName, columnEmail, columnPassword, columnRole).
 		Values(user.Name, user.Email, user.Password, user.Role).
 		Suffix("RETURNING id")
 
@@ -130,9 +137,9 @@ func (s *storage) Create(ctx context.Context, req model.User, passwordHash strin
 // GetPasswordHash - получить hash пароля
 func (s *storage) GetPasswordHash(ctx context.Context, id int64) (string, error) {
 	qb := squirrel.
-		Select("password").
+		Select(columnPassword).
 		From(tableUsers).
-		Where(squirrel.Eq{"id": id})
+		Where(squirrel.Eq{columnID: id})
 
 	query, args, err := qb.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
@@ -155,7 +162,7 @@ func (s *storage) GetPasswordHash(ctx context.Context, id int64) (string, error)
 func (s *storage) Delete(ctx context.Context, id int64) error {
 	qb := squirrel.
 		Delete(tableUsers).
-		Where(squirrel.Eq{"id": id})
+		Where(squirrel.Eq{columnID: id})
 
 	query, args, err := qb.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {

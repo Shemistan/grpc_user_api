@@ -13,6 +13,9 @@ type storage struct {
 
 const (
 	tableResourceAccess = "resource_access"
+	role                = "role"
+	resource            = "resource"
+	isAccess            = "is_access"
 )
 
 // NewStorage - новый storage

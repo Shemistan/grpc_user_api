@@ -9,11 +9,13 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/model"
 )
 
+const ()
+
 // AddAccess - добавить информацию о доступе
 func (s *storage) AddAccess(ctx context.Context, req model.AccessRequest) error {
 	qb := squirrel.
 		Insert(tableResourceAccess).
-		Columns("role", "resource", "is_access").
+		Columns(role, resource, isAccess).
 		Values(req.Role, req.Resource, req.IsAccess)
 
 	query, args, err := qb.PlaceholderFormat(squirrel.Dollar).ToSql()
@@ -35,13 +37,13 @@ func (s *storage) AddAccess(ctx context.Context, req model.AccessRequest) error 
 // UpdateAccess - изменить информацию о доступе
 func (s *storage) UpdateAccess(ctx context.Context, req model.AccessRequest) error {
 	qb := squirrel.Update(tableResourceAccess).
-		Set("role", req.Role).
-		Set("resource", req.Resource).
-		Set("is_access", req.IsAccess)
+		Set(role, req.Role).
+		Set(resource, req.Resource).
+		Set(isAccess, req.IsAccess)
 
 	qb = qb.Where(squirrel.And{
-		squirrel.Eq{"role": req.Role},
-		squirrel.Eq{"resource": req.Resource},
+		squirrel.Eq{role: req.Role},
+		squirrel.Eq{resource: req.Resource},
 	}).
 		PlaceholderFormat(squirrel.Dollar)
 
@@ -62,7 +64,7 @@ func (s *storage) UpdateAccess(ctx context.Context, req model.AccessRequest) err
 func (s *storage) UpsertAccess(ctx context.Context, req model.AccessRequest) error {
 	qb := squirrel.
 		Insert(tableResourceAccess).
-		Columns("role", "resource", "is_access").
+		Columns(role, resource, isAccess).
 		Values(req.Role, req.Resource, req.IsAccess).
 		Suffix("ON CONFLICT (role, resource) DO UPDATE SET role = EXCLUDED.role, resource = EXCLUDED.resource, is_access = EXCLUDED.is_access")
 

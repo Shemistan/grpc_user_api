@@ -14,9 +14,9 @@ func (s *storage) GetAccess(ctx context.Context, req model.AccessRequest) (model
 	var res model.AccessRequest
 
 	qb := squirrel.
-		Select("role", "resource", "is_access").
+		Select(role, resource, isAccess).
 		From(tableResourceAccess).
-		Where(squirrel.Eq{"role": req.Role, "resource": req.Resource})
+		Where(squirrel.Eq{role: req.Role, resource: req.Resource})
 
 	query, args, err := qb.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
@@ -37,7 +37,7 @@ func (s *storage) GetAccess(ctx context.Context, req model.AccessRequest) (model
 // GetAllAccess - получить все доступы
 func (s *storage) GetAllAccess(ctx context.Context) ([]model.AccessRequest, error) {
 	qb := squirrel.
-		Select("role", "resource", "is_access").
+		Select(role, resource, isAccess).
 		From(tableResourceAccess)
 
 	query, _, err := qb.PlaceholderFormat(squirrel.Dollar).ToSql()

@@ -255,7 +255,10 @@ func TestGetUser(t *testing.T) {
 	testError := errors.New("test error")
 
 	t.Run("storage error", func(t *testing.T) {
-		storage.On("GetUser", ctx, userID).
+		storage.On("GetUser", ctx, model.GetUserRequest{
+			ID:    &userID,
+			Email: nil,
+		}).
 			Return(model.User{}, testError).Once()
 
 		_, err := s.GetUser(ctx, userID)
@@ -278,7 +281,10 @@ func TestGetUser(t *testing.T) {
 			UpdatedAt:       &updatedAt,
 		}
 
-		storage.On("GetUser", ctx, userID).
+		storage.On("GetUser", ctx, model.GetUserRequest{
+			ID:    &userID,
+			Email: nil,
+		}).
 			Return(expect, nil).Once()
 
 		actual, err := s.GetUser(ctx, userID)

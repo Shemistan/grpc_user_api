@@ -59,13 +59,14 @@ type LoginResponse struct {
 	AccessToken  string
 }
 
-// AccessRequest - запрос длч обработки доступов
+// AccessRequest - запрос для обработки доступов
 type AccessRequest struct {
 	Role     int64  `db:"role"`
 	Resource string `db:"resource"`
 	IsAccess bool   `db:"is_access"`
 }
 
+// GetUserRequest - запрос для получения пользователя
 type GetUserRequest struct {
 	ID    *int64
 	Email *string

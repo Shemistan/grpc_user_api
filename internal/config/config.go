@@ -18,16 +18,6 @@ type GRPCConfig interface {
 	Address() string
 }
 
-// GRPCAuthConfig конфиг
-type GRPCAuthConfig interface {
-	Address() string
-}
-
-// GRPCAccessConfig конфиг
-type GRPCAccessConfig interface {
-	Address() string
-}
-
 // PGConfig конфиг
 type PGConfig interface {
 	DSN() string

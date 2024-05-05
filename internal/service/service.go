@@ -25,4 +25,5 @@ type Auth interface {
 type Access interface {
 	Check(ctx context.Context, req string) error
 	AddOrUpdateAccess(ctx context.Context, req model.AccessRequest) error
+	AddActualValuesInCache(ctx context.Context) error
 }

@@ -2,10 +2,12 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
 
+	"github.com/jackc/pgx/v4"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/Shemistan/grpc_user_api/internal/model"
@@ -56,8 +58,9 @@ func (s *service) checkTokenAndGetClaims(ctx context.Context) (*model.UserClaims
 }
 
 func (s *service) checkAccessibleRoles(ctx context.Context, role int64, resource string) (bool, error) {
-	if v, okRole := s.cache.accessibleRoles[role]; okRole {
-		if isAccess, okResource := v[resource]; okResource {
+	accessesMap := s.cache.GetAccessesForRole(role)
+	if accessesMap != nil {
+		if isAccess, okResource := accessesMap[resource]; okResource {
 			return isAccess, nil
 		}
 	}
@@ -67,40 +70,28 @@ func (s *service) checkAccessibleRoles(ctx context.Context, role int64, resource
 		Resource: resource,
 	})
 	if err != nil {
-		if !strings.HasPrefix(err.Error(), serviceErrors.ErrNoRows.Error()) {
+		if !errors.Is(err, pgx.ErrNoRows) {
 			return false, err
 		}
 
 		go func(ctx context.Context, role int64, resource string) {
-			errAdd := s.addNewAccess(ctx, model.AccessRequest{
+			req := model.AccessRequest{
 				Role:     role,
 				Resource: resource,
-			})
-
+			}
+			errAdd := s.accessStorage.AddAccess(ctx, req)
 			if errAdd != nil {
 				log.Println(fmt.Sprintf("failed  to add new access for role(%d) and resource(%s)", role, resource), err)
+				return
 			}
 
-			s.addInCache(model.AccessRequest{
-				Role:     role,
-				Resource: resource,
-				IsAccess: false,
-			})
-		}(ctx, role, resource)
+			s.cache.AddInCache(req)
+		}(context.Background(), role, resource)
 
 		return false, nil
 	}
 
+	s.cache.AddInCache(access)
+
 	return access.IsAccess, nil
-}
-
-func (s *service) addNewAccess(ctx context.Context, req model.AccessRequest) error {
-	err := s.accessStorage.AddAccess(ctx, req)
-	if err != nil {
-		return err
-	}
-
-	s.addInCache(req)
-
-	return nil
 }

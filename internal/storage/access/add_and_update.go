@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/Shemistan/platform_common/pkg/db"
@@ -12,12 +11,20 @@ import (
 
 // AddAccess - добавить информацию о доступе
 func (s *storage) AddAccess(ctx context.Context, req model.AccessRequest) error {
-	query := fmt.Sprintf(`INSERT INTO %s( role ,resource, is_access) VALUES ( $1, $2,$3);`, tableResourceAccess)
+	qb := squirrel.
+		Insert(tableResourceAccess).
+		Columns("role", "resource", "is_access").
+		Values(req.Role, req.Resource, req.IsAccess)
 
-	_, err := s.db.DB().ExecContext(ctx, db.Query{
+	query, args, err := qb.PlaceholderFormat(squirrel.Dollar).ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.DB().ExecContext(ctx, db.Query{
 		Name:     "add_access",
 		QueryRaw: query,
-	}, req.Role, req.Resource, req.IsAccess)
+	}, args...)
 	if err != nil {
 		return err
 	}
@@ -49,4 +56,28 @@ func (s *storage) UpdateAccess(ctx context.Context, req model.AccessRequest) err
 	}, args...)
 
 	return err
+}
+
+// UpsertAccess - добавить или редактировать доступ
+func (s *storage) UpsertAccess(ctx context.Context, req model.AccessRequest) error {
+	qb := squirrel.
+		Insert(tableResourceAccess).
+		Columns("role", "resource", "is_access").
+		Values(req.Role, req.Resource, req.IsAccess).
+		Suffix("ON CONFLICT (role, resource) DO UPDATE SET role = EXCLUDED.role, resource = EXCLUDED.resource, is_access = EXCLUDED.is_access")
+
+	query, args, err := qb.PlaceholderFormat(squirrel.Dollar).ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.DB().ExecContext(ctx, db.Query{
+		Name:     "upsert_access",
+		QueryRaw: query,
+	}, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

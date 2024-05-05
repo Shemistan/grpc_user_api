@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"flag"
 
 	"io"
 	"log"
@@ -38,8 +39,7 @@ type App struct {
 var configPath string
 
 func init() {
-	//flag.StringVar(&configPath, "config-path", ".env", "path to config file")
-	configPath = ".env"
+	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
 }
 
 // NewApp - создать новый экземпляр структуры приложения
@@ -102,6 +102,7 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
+		a.addActualValuesInCache,
 	}
 
 	for _, f := range inits {
@@ -135,7 +136,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	err := descUser.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCUserConfig().Address(), opts)
+	err := descUser.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}
@@ -186,6 +187,16 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	descAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthAPI(ctx))
 	descAccess.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessAPI(ctx))
 	descUser.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserAPI(ctx))
+
+	return nil
+}
+
+func (a *App) addActualValuesInCache(ctx context.Context) error {
+	err := a.serviceProvider.accessService.AddActualValuesInCache(ctx)
+	if err != nil {
+		log.Println("failed to add actual values in cache:", err)
+		return err
+	}
 
 	return nil
 }
@@ -253,9 +264,9 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 }
 
 func (a *App) runGRPCServer() error {
-	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCAuthConfig().Address())
+	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCConfig().Address())
 
-	list, err := net.Listen("tcp", a.serviceProvider.GRPCAuthConfig().Address())
+	list, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
 	if err != nil {
 		return err
 	}

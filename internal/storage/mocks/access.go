@@ -108,6 +108,24 @@ func (_m *Access) UpdateAccess(ctx context.Context, req model.AccessRequest) err
 	return r0
 }
 
+// UpsertAccess provides a mock function with given fields: ctx, req
+func (_m *Access) UpsertAccess(ctx context.Context, req model.AccessRequest) error {
+	ret := _m.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpsertAccess")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, model.AccessRequest) error); ok {
+		r0 = rf(ctx, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewAccess creates a new instance of Access. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewAccess(t interface {

@@ -82,7 +82,7 @@ func (s *storage) Update(ctx context.Context, req model.UpdateUser, passwordHash
 
 // GetUser - получить пользователя
 func (s *storage) GetUser(ctx context.Context, id int64) (model.User, error) {
-	query := fmt.Sprintf(`SELECT  name, email, password, role, created_at, updated_at FROM %s WHERE id = $1`, tableUsers)
+	query := fmt.Sprintf(`SELECT  id, name, email, password, role, created_at, updated_at FROM %s WHERE id = $1`, tableUsers)
 
 	var user storageModel.User
 	err := s.db.DB().ScanOneContext(ctx, &user, db.Query{

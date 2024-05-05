@@ -22,4 +22,11 @@ type Access interface {
 	UpdateAccess(ctx context.Context, req model.AccessRequest) error
 	GetAccess(ctx context.Context, req model.AccessRequest) (model.AccessRequest, error)
 	GetAllAccess(ctx context.Context) ([]model.AccessRequest, error)
+	UpsertAccess(ctx context.Context, req model.AccessRequest) error
+}
+
+// Cache - кэш для хранения доступов
+type Cache interface {
+	AddInCache(req model.AccessRequest)
+	GetAccessesForRole(role int64) map[string]bool
 }

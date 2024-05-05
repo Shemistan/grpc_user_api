@@ -20,6 +20,7 @@ import (
 	userService "github.com/Shemistan/grpc_user_api/internal/service/user"
 	"github.com/Shemistan/grpc_user_api/internal/storage"
 	accessStorage "github.com/Shemistan/grpc_user_api/internal/storage/access"
+	"github.com/Shemistan/grpc_user_api/internal/storage/access_cache"
 	userStorage "github.com/Shemistan/grpc_user_api/internal/storage/user"
 	"github.com/Shemistan/grpc_user_api/internal/utils"
 	"github.com/Shemistan/grpc_user_api/internal/utils/hasher"
@@ -34,8 +35,6 @@ type serviceProvider struct {
 	secretHashConfig         config.SecretHashConfig
 	secretRefreshTokenConfig config.SecretRefreshTokenConfig
 	secretAccessTokenConfig  config.SecretAccessTokenConfig
-	grpcAuthConfig           config.GRPCAuthConfig
-	grpcAccessConfig         config.GRPCAccessConfig
 
 	tokenServiceConfig *config.TokenServiceConfig
 
@@ -52,6 +51,8 @@ type serviceProvider struct {
 	accessStorage storage.Access
 	accessService service.Access
 	accessAPI     *accessAPI.Access
+
+	cacheStorage storage.Cache
 
 	passwordHasher utils.Hasher
 	tokenProvider  utils.TokenProvider
@@ -74,7 +75,7 @@ func (s *serviceProvider) PGConfig() config.PGConfig {
 	return s.pgConfig
 }
 
-func (s *serviceProvider) GRPCUserConfig() config.GRPCConfig {
+func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if s.grpcUserConfig == nil {
 		cfg, err := env.NewGRPCConfig()
 		if err != nil {
@@ -85,32 +86,6 @@ func (s *serviceProvider) GRPCUserConfig() config.GRPCConfig {
 	}
 
 	return s.grpcUserConfig
-}
-
-func (s *serviceProvider) GRPCAuthConfig() config.GRPCAuthConfig {
-	if s.grpcAuthConfig == nil {
-		cfg, err := env.NewGRPCAuthConfig()
-		if err != nil {
-			log.Fatalf("failed to get grpc auth config: %s", err.Error())
-		}
-
-		s.grpcAuthConfig = cfg
-	}
-
-	return s.grpcAuthConfig
-}
-
-func (s *serviceProvider) GRPCAccessConfig() config.GRPCAccessConfig {
-	if s.grpcAccessConfig == nil {
-		cfg, err := env.NewGRPCAccessConfig()
-		if err != nil {
-			log.Fatalf("failed to get grpc access config: %s", err.Error())
-		}
-
-		s.grpcAccessConfig = cfg
-	}
-
-	return s.grpcAccessConfig
 }
 
 func (s *serviceProvider) SecretHashConfig() config.SecretHashConfig {
@@ -221,6 +196,14 @@ func (s *serviceProvider) AccessStorage(ctx context.Context) storage.Access {
 	return s.accessStorage
 }
 
+func (s *serviceProvider) CacheStorage(_ context.Context) storage.Cache {
+	if s.cacheStorage == nil {
+		s.cacheStorage = access_cache.NewCache()
+	}
+
+	return s.cacheStorage
+}
+
 func (s *serviceProvider) PasswordHasher(_ context.Context) utils.Hasher {
 	if s.passwordHasher == nil {
 		s.passwordHasher = hasher.New(s.SecretHashConfig().PasswordHashKey())
@@ -280,6 +263,7 @@ func (s *serviceProvider) AccessService(ctx context.Context) service.Access {
 			s.TokenProvider(ctx),
 			s.AccessStorage(ctx),
 			s.SecretAccessTokenConfig().SecretKey(),
+			s.CacheStorage(ctx),
 		)
 	}
 

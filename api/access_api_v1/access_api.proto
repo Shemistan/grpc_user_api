@@ -10,7 +10,6 @@ option go_package = "github.com/Shemistan/grpc_user_api/pkg/access_api_v1;access
 service AccessV1 {
   rpc Check(CheckRequest) returns (google.protobuf.Empty);
   rpc AddOrUpdateAccess(AddOrUpdateAccessRequest)returns (google.protobuf.Empty);
-
 }
 
 message CheckRequest {

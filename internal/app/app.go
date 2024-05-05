@@ -30,10 +30,8 @@ import (
 // App - структура приложения
 type App struct {
 	serviceProvider   *serviceProvider
-	grpcUserServer    *grpc.Server
-	grpcAuthServer    *grpc.Server
-	grpcAccessServer  *grpc.Server
-	httpUserServer    *http.Server
+	grpcServer        *grpc.Server
+	httpServer        *http.Server
 	swaggerUserServer *http.Server
 }
 
@@ -64,32 +62,14 @@ func (a *App) Run() error {
 	}()
 
 	wg := sync.WaitGroup{}
-	wg.Add(5)
+	wg.Add(3)
 
 	go func() {
 		defer wg.Done()
 
-		err := a.runGRPCUserServer()
-		if err != nil {
-			log.Fatalf("failed to run GRPC server: %v", err)
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-
-		err := a.runGRPCAuthServer()
+		err := a.runGRPCServer()
 		if err != nil {
 			log.Fatalf("failed to run GRPC auth server: %v", err)
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-
-		err := a.runGRPCAccessServer()
-		if err != nil {
-			log.Fatalf("failed to run GRPC access server: %v", err)
 		}
 	}()
 
@@ -119,11 +99,9 @@ func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initConfig,
 		a.initServiceProvider,
-		a.initGRPCUserServer,
+		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
-		a.initGRPCAuthServer,
-		a.initGRPCAccessServer,
 	}
 
 	for _, f := range inits {
@@ -150,19 +128,6 @@ func (a *App) initServiceProvider(_ context.Context) error {
 	return nil
 }
 
-func (a *App) initGRPCUserServer(ctx context.Context) error {
-	a.grpcUserServer = grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
-	)
-
-	reflection.Register(a.grpcUserServer)
-
-	descUser.RegisterUserV1Server(a.grpcUserServer, a.serviceProvider.UserAPI(ctx))
-
-	return nil
-}
-
 func (a *App) initHTTPServer(ctx context.Context) error {
 	mux := runtime.NewServeMux()
 
@@ -182,7 +147,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		AllowCredentials: true,
 	})
 
-	a.httpUserServer = &http.Server{
+	a.httpServer = &http.Server{
 		Addr:              a.serviceProvider.HTTPConfig().Address(),
 		Handler:           corsMiddleware.Handler(mux),
 		ReadHeaderTimeout: 10 * time.Second,
@@ -210,44 +175,17 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 	return nil
 }
 
-func (a *App) initGRPCAuthServer(ctx context.Context) error {
-	a.grpcAuthServer = grpc.NewServer(
+func (a *App) initGRPCServer(ctx context.Context) error {
+	a.grpcServer = grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
 		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
 	)
 
-	reflection.Register(a.grpcAuthServer)
+	reflection.Register(a.grpcServer)
 
-	descAuth.RegisterAuthV1Server(a.grpcAuthServer, a.serviceProvider.AuthAPI(ctx))
-
-	return nil
-}
-
-func (a *App) initGRPCAccessServer(ctx context.Context) error {
-	a.grpcAccessServer = grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
-	)
-
-	reflection.Register(a.grpcAccessServer)
-
-	descAccess.RegisterAccessV1Server(a.grpcAccessServer, a.serviceProvider.AccessAPI(ctx))
-
-	return nil
-}
-
-func (a *App) runGRPCUserServer() error {
-	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCUserConfig().Address())
-
-	list, err := net.Listen("tcp", a.serviceProvider.GRPCUserConfig().Address())
-	if err != nil {
-		return err
-	}
-
-	err = a.grpcUserServer.Serve(list)
-	if err != nil {
-		return err
-	}
+	descAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthAPI(ctx))
+	descAccess.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessAPI(ctx))
+	descUser.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserAPI(ctx))
 
 	return nil
 }
@@ -255,7 +193,7 @@ func (a *App) runGRPCUserServer() error {
 func (a *App) runHTTPServer() error {
 	log.Printf("HTTP server is running on %s", a.serviceProvider.httpConfig.Address())
 
-	err := a.httpUserServer.ListenAndServe()
+	err := a.httpServer.ListenAndServe()
 	if err != nil {
 		return err
 	}
@@ -314,31 +252,15 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 	}
 }
 
-func (a *App) runGRPCAuthServer() error {
-	log.Printf("GRPC auth server is running on %s", a.serviceProvider.GRPCAuthConfig().Address())
+func (a *App) runGRPCServer() error {
+	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCAuthConfig().Address())
 
 	list, err := net.Listen("tcp", a.serviceProvider.GRPCAuthConfig().Address())
 	if err != nil {
 		return err
 	}
 
-	err = a.grpcAuthServer.Serve(list)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (a *App) runGRPCAccessServer() error {
-	log.Printf("GRPC access server is running on %s", a.serviceProvider.GRPCAccessConfig().Address())
-
-	list, err := net.Listen("tcp", a.serviceProvider.GRPCAccessConfig().Address())
-	if err != nil {
-		return err
-	}
-
-	err = a.grpcAccessServer.Serve(list)
+	err = a.grpcServer.Serve(list)
 	if err != nil {
 		return err
 	}

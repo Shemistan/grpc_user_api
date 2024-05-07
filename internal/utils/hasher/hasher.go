@@ -6,18 +6,18 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/utils"
 )
 
-// service структура, реализующая интерфейс Hasher.
-type service struct {
+// hasher структура, реализующая интерфейс Hasher.
+type hasher struct {
 	secretKey string
 }
 
 // New создает новый экземпляр service с заданным секретным ключом.
 func New(secretKey string) utils.Hasher {
-	return &service{secretKey: secretKey}
+	return &hasher{secretKey: secretKey}
 }
 
 // GetPasswordHash генерирует хеш пароля с использованием bcrypt.
-func (s *service) GetPasswordHash(password string) (string, error) {
+func (s *hasher) GetPasswordHash(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password+s.secretKey), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -26,7 +26,7 @@ func (s *service) GetPasswordHash(password string) (string, error) {
 }
 
 // CheckPassword проверяет, соответствует ли пароль хешу.
-func (s *service) CheckPassword(hash, password string) bool {
+func (s *hasher) CheckPassword(hash, password string) bool {
 	// Сравниваем предоставленный пароль с хешем.
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password+s.secretKey))
 	return err == nil

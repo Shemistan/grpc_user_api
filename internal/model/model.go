@@ -1,6 +1,15 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
+)
+
+const (
+	//TokenAuthPrefix - префикс для токена в хэдере
+	TokenAuthPrefix = "Bearer "
+)
 
 // User - основная модель пользователя
 type User struct {
@@ -23,4 +32,42 @@ type UpdateUser struct {
 	NewPassword        *string
 	NewPasswordConfirm *string
 	Role               int64
+}
+
+// UserInfo - информация о пользователе для авторизации
+type UserInfo struct {
+	Login string `json:"login"`
+	Role  int64  `json:"role"`
+}
+
+// UserClaims - структура для работы токена
+type UserClaims struct {
+	jwt.StandardClaims
+	Login string `json:"login"`
+	Role  int64  `json:"role"`
+}
+
+// LoginRequest - запрос для авторизации
+type LoginRequest struct {
+	Login    string
+	Password string
+}
+
+// LoginResponse - ответ при авторизации
+type LoginResponse struct {
+	RefreshToken string
+	AccessToken  string
+}
+
+// AccessRequest - запрос для обработки доступов
+type AccessRequest struct {
+	Role     int64  `db:"role"`
+	Resource string `db:"resource"`
+	IsAccess bool   `db:"is_access"`
+}
+
+// GetUserRequest - запрос для получения пользователя
+type GetUserRequest struct {
+	ID    *int64
+	Email *string
 }

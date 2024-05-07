@@ -71,7 +71,6 @@ message CreateRequest{
   string password_confirm = 4 [(validate.rules).string = {min_len: 4}];
 
   Role role = 5;
-
 }
 
 message CreateResponse{

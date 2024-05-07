@@ -1,7 +1,16 @@
 package config
 
 import (
+	"time"
+
 	"github.com/joho/godotenv"
+)
+
+const (
+	//RefreshTokenExpiration - TTL токена
+	RefreshTokenExpiration = 3 * 24 * time.Hour
+	//AccessTokenExpiration - TTL токена
+	AccessTokenExpiration = 5 * time.Hour
 )
 
 // GRPCConfig конфиг
@@ -37,4 +46,22 @@ type HTTP interface {
 // Swagger конфиг
 type Swagger interface {
 	Address() string
+}
+
+// SecretRefreshTokenConfig конфиг
+type SecretRefreshTokenConfig interface {
+	SecretKey() string
+}
+
+// SecretAccessTokenConfig конфиг
+type SecretAccessTokenConfig interface {
+	SecretKey() string
+}
+
+// TokenServiceConfig конфиг
+type TokenServiceConfig struct {
+	RefreshTokenSecretKey  string
+	AccessTokenSecretKey   string
+	RefreshTokenExpiration time.Duration
+	AccessTokenExpiration  time.Duration
 }

@@ -2,13 +2,13 @@ package user
 
 import (
 	"context"
-	"log"
-
+	"github.com/Shemistan/grpc_user_api/internal/logger"
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	serviceErrors "github.com/Shemistan/grpc_user_api/internal/model/service_errors"
 	def "github.com/Shemistan/grpc_user_api/internal/service"
 	"github.com/Shemistan/grpc_user_api/internal/storage"
 	"github.com/Shemistan/grpc_user_api/internal/utils"
+	"go.uber.org/zap"
 )
 
 type service struct {
@@ -32,7 +32,7 @@ func (s *service) Create(ctx context.Context, req model.User) (int64, error) {
 
 	passwordHash, err := s.hasher.GetPasswordHash(req.Password)
 	if err != nil {
-		log.Println("failed to hashing password:", err.Error())
+		logger.Error("failed to hashing password:", zap.String("error", err.Error()))
 		return 0, err
 	}
 
@@ -50,24 +50,29 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 
 	if req.NewPassword != nil && req.NewPasswordConfirm != nil {
 		if *req.NewPassword != *req.NewPasswordConfirm {
+			logger.Error("failed to update user:", zap.String("error", serviceErrors.ErrPasswordMismatch.Error()))
 			return serviceErrors.ErrPasswordMismatch
 		}
 
 		if req.OldPassword == nil {
+			logger.Error("failed to update user:", zap.String("error", serviceErrors.ErrOldPasswordNotFound.Error()))
 			return serviceErrors.ErrOldPasswordNotFound
 		}
 
 		ok, err := s.checkUserPassword(ctx, req.ID, *req.OldPassword)
 		if err != nil {
+			logger.Error("failed to update user:", zap.String("error", err.Error()))
 			return err
 		}
 
 		if !ok {
+			logger.Error("failed to update user:", zap.String("error", serviceErrors.ErrOldPasswordNotValid.Error()))
 			return serviceErrors.ErrOldPasswordNotValid
 		}
 
 		hash, err := s.hasher.GetPasswordHash(*req.NewPassword)
 		if err != nil {
+			logger.Error("failed to update user:", zap.String("error", err.Error()))
 			return err
 		}
 
@@ -76,6 +81,7 @@ func (s *service) Update(ctx context.Context, req model.UpdateUser) error {
 
 	err := s.userStorage.Update(ctx, req, passwordHash)
 	if err != nil {
+		logger.Error("failed to update user:", zap.String("error", err.Error()))
 		return err
 	}
 
@@ -89,6 +95,7 @@ func (s *service) GetUser(ctx context.Context, id int64) (model.User, error) {
 		Email: nil,
 	})
 	if err != nil {
+		logger.Error("failed to get user:", zap.String("error", err.Error()))
 		return model.User{}, err
 	}
 
@@ -99,6 +106,7 @@ func (s *service) GetUser(ctx context.Context, id int64) (model.User, error) {
 func (s *service) Delete(ctx context.Context, id int64) error {
 	err := s.userStorage.Delete(ctx, id)
 	if err != nil {
+		logger.Error("failed to delete user:", zap.String("error", err.Error()))
 		return err
 	}
 

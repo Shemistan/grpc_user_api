@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"github.com/Shemistan/grpc_user_api/internal/logger"
+	"go.uber.org/zap"
 
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	serviceErrors "github.com/Shemistan/grpc_user_api/internal/model/service_errors"
@@ -11,6 +13,8 @@ import (
 func (s *service) GetRefreshToken(_ context.Context, req string) (string, error) {
 	claims, err := s.tokenProvider.VerifyToken(req, []byte(s.config.RefreshTokenSecretKey))
 	if err != nil {
+		logger.Error("failed to get refresh token:", zap.String("error", serviceErrors.ErrRefreshTokenInvalid.Error()))
+
 		return "", serviceErrors.ErrRefreshTokenInvalid
 	}
 
@@ -22,6 +26,8 @@ func (s *service) GetRefreshToken(_ context.Context, req string) (string, error)
 		s.config.RefreshTokenExpiration,
 	)
 	if err != nil {
+		logger.Error("failed to get refresh token:", zap.String("error", serviceErrors.ErrAccessTokenInvalid.Error()))
+
 		return "", err
 	}
 

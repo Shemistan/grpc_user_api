@@ -28,6 +28,7 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/interceptor"
 	"github.com/Shemistan/grpc_user_api/internal/logger"
 	"github.com/Shemistan/grpc_user_api/internal/metric"
+	"github.com/Shemistan/grpc_user_api/internal/tracing"
 	descAccess "github.com/Shemistan/grpc_user_api/pkg/access_api_v1"
 	descAuth "github.com/Shemistan/grpc_user_api/pkg/auth_api_v1"
 	descUser "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
@@ -44,6 +45,8 @@ type App struct {
 }
 
 var configPath string
+
+const serviceName = "my_service"
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
@@ -120,6 +123,7 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initSwaggerServer,
 		a.addActualValuesInCache,
 		a.initMetric,
+		a.initTracing,
 	}
 
 	for _, f := range inits {
@@ -201,6 +205,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 				interceptor.LogInterceptor,
 				interceptor.ValidateInterceptor,
 				interceptor.MetricsInterceptor,
+				interceptor.ServerTracingInterceptor,
 			),
 		),
 	)
@@ -216,6 +221,21 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 func (a *App) initLogger(_ context.Context) error {
 	logger.Init(a.getCore(a.getAtomicLevel()))
+	return nil
+}
+
+func (a *App) initMetric(ctx context.Context) error {
+	err := metric.Init(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// InitTracing - инициализация трейсинга
+func (a *App) initTracing(_ context.Context) error {
+	tracing.Init(logger.Logger(), serviceName)
 	return nil
 }
 
@@ -361,13 +381,4 @@ func (a *App) getAtomicLevel() zap.AtomicLevel {
 	}
 
 	return zap.NewAtomicLevelAt(level)
-}
-
-func (a *App) initMetric(ctx context.Context) error {
-	err := metric.Init(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

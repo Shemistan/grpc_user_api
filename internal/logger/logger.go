@@ -7,6 +7,11 @@ import (
 
 var globalLogger *zap.Logger
 
+// Logger - получить глобальный логгер
+func Logger() *zap.Logger {
+	return globalLogger
+}
+
 // Init - инициализация логгера
 func Init(core zapcore.Core, options ...zap.Option) {
 	globalLogger = zap.New(core, options...)

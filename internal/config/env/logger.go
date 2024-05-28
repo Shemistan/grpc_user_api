@@ -15,6 +15,7 @@ const (
 	logMaxBackupsEnvName  = "LOG_MAX_BACKUPS"
 	logMaxAgeEnvName      = "LOG_MAX_AGE"
 	logLevelEnvName       = "LOG_LEVEL"
+	defaultLogLevel       = "info"
 )
 
 type zapLoggerConfig struct {
@@ -53,7 +54,7 @@ func NewZapLoggerConfig() (config.ZapLogger, error) {
 
 	logLevel := os.Getenv(logLevelEnvName)
 	if len(logLevel) == 0 {
-		logLevel = "info"
+		logLevel = defaultLogLevel
 	}
 
 	return &zapLoggerConfig{
@@ -61,6 +62,7 @@ func NewZapLoggerConfig() (config.ZapLogger, error) {
 		fileMaxSize: fileMaxSize,
 		maxBackups:  maxBackups,
 		maxAge:      maxAge,
+		logLevel:    logLevel,
 	}, nil
 }
 

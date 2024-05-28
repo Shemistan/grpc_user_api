@@ -9,6 +9,7 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/metric"
 )
 
+// MetricsInterceptor - метрики для gRPC
 func MetricsInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	metric.IncRequestCounter()
 

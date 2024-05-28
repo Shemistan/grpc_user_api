@@ -10,6 +10,7 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/logger"
 )
 
+// LogInterceptor - логирование запросов
 func LogInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	now := time.Now()
 

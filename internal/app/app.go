@@ -26,6 +26,7 @@ import (
 	"github.com/Shemistan/grpc_user_api/internal/config"
 	"github.com/Shemistan/grpc_user_api/internal/interceptor"
 	"github.com/Shemistan/grpc_user_api/internal/logger"
+	"github.com/Shemistan/grpc_user_api/internal/metric"
 	descAccess "github.com/Shemistan/grpc_user_api/pkg/access_api_v1"
 	descAuth "github.com/Shemistan/grpc_user_api/pkg/auth_api_v1"
 	descUser "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
@@ -118,6 +119,7 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initHTTPServer,
 		a.initSwaggerServer,
 		a.addActualValuesInCache,
+		a.initMetric,
 	}
 
 	for _, f := range inits {
@@ -126,42 +128,6 @@ func (a *App) initDeps(ctx context.Context) error {
 			return err
 		}
 	}
-	//
-	//var err error
-	//err = a.initConfig(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//err = a.initServiceProvider(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//err = a.initLogger(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//err = a.initGRPCServer(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//err = a.initHTTPServer(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//err = a.initSwaggerServer(ctx)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//err = a.addActualValuesInCache(ctx)
-	//if err != nil {
-	//	return err
-	//}
 
 	return nil
 }
@@ -202,7 +168,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	a.httpServer = &http.Server{
 		Addr:              a.serviceProvider.HTTPConfig().Address(),
 		Handler:           corsMiddleware.Handler(mux),
-		ReadHeaderTimeout: 10 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	return nil
@@ -234,7 +200,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 			grpcMiddleware.ChainUnaryServer(
 				interceptor.LogInterceptor,
 				interceptor.ValidateInterceptor,
-				//interceptor.MetricsInterceptor,
+				interceptor.MetricsInterceptor,
 			),
 		),
 	)
@@ -349,8 +315,9 @@ func (a *App) runPrometheus() error {
 	mux.Handle("/metrics", promhttp.Handler())
 
 	prometheusServer := &http.Server{
-		Addr:    a.serviceProvider.PrometheusConfig().Address(),
-		Handler: mux,
+		Addr:              a.serviceProvider.PrometheusConfig().Address(),
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	log.Printf("Prometheus server is running on %s", a.serviceProvider.PrometheusConfig().Address())
@@ -397,4 +364,13 @@ func (a *App) getAtomicLevel() zap.AtomicLevel {
 	}
 
 	return zap.NewAtomicLevelAt(level)
+}
+
+func (a *App) initMetric(ctx context.Context) error {
+	err := metric.Init(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

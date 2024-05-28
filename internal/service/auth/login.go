@@ -2,10 +2,12 @@ package auth
 
 import (
 	"context"
+
+	"go.uber.org/zap"
+
 	"github.com/Shemistan/grpc_user_api/internal/logger"
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	serviceErrors "github.com/Shemistan/grpc_user_api/internal/model/service_errors"
-	"go.uber.org/zap"
 )
 
 // Login - авторизоваться

@@ -137,13 +137,3 @@ grpc-load-test:
 		--total 3000 \
 		--insecure \
 		localhost:50051
-
-grpc-error-load-test:
-	ghz \
-		--proto api/user_api_v1/user_api.proto \
-		--call user_api_v1.UserV1.Get \
-		--data '{"id": 0}' \
-		--rps 100 \
-		--total 1000 \
-		--insecure \
-		localhost:50051

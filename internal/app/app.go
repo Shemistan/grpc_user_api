@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"flag"
 	"io"
 	"log"
 	"net"
@@ -45,8 +46,7 @@ type App struct {
 var configPath string
 
 func init() {
-	//flag.StringVar(&configPath, "config-path", ".env", "path to config file")
-	configPath = ".env"
+	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
 }
 
 // NewApp - создать новый экземпляр структуры приложения
@@ -215,10 +215,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 }
 
 func (a *App) initLogger(_ context.Context) error {
-	l := a.getAtomicLevel()
-	c := a.getCore(l)
-	logger.Init(c)
-	//logger.Init(a.getCore(a.getAtomicLevel()))
+	logger.Init(a.getCore(a.getAtomicLevel()))
 	return nil
 }
 

@@ -2,8 +2,10 @@ package auth
 
 import (
 	"context"
-	"log"
 
+	"go.uber.org/zap"
+
+	"github.com/Shemistan/grpc_user_api/internal/logger"
 	"github.com/Shemistan/grpc_user_api/internal/model"
 	serviceErrors "github.com/Shemistan/grpc_user_api/internal/model/service_errors"
 )
@@ -17,11 +19,15 @@ func (s *service) Login(ctx context.Context, req model.LoginRequest) (model.Logi
 		Email: &req.Login,
 	})
 	if err != nil {
+		logger.Error("failed to authorize user:", zap.String("error", err.Error()))
+
 		return res, err
 	}
 
 	ok := s.hasher.CheckPassword(user.Password, req.Password)
 	if !ok {
+		logger.Error("failed to authorize user:", zap.String("error", serviceErrors.ErrPasswordNotValid.Error()))
+
 		return res, serviceErrors.ErrPasswordNotValid
 	}
 
@@ -33,7 +39,8 @@ func (s *service) Login(ctx context.Context, req model.LoginRequest) (model.Logi
 		s.config.RefreshTokenExpiration,
 	)
 	if err != nil {
-		log.Println("failed to generate refresh token")
+		logger.Error("failed to authorize user:", zap.String("error", serviceErrors.ErrGenerateToken.Error()))
+
 		return res, serviceErrors.ErrGenerateToken
 	}
 
@@ -45,7 +52,8 @@ func (s *service) Login(ctx context.Context, req model.LoginRequest) (model.Logi
 		s.config.AccessTokenExpiration,
 	)
 	if err != nil {
-		log.Println("failed to generate access token")
+		logger.Error("failed to authorize user:", zap.String("error", serviceErrors.ErrGenerateToken.Error()))
+
 		return res, serviceErrors.ErrGenerateToken
 	}
 

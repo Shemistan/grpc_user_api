@@ -35,6 +35,8 @@ type serviceProvider struct {
 	secretHashConfig         config.SecretHashConfig
 	secretRefreshTokenConfig config.SecretRefreshTokenConfig
 	secretAccessTokenConfig  config.SecretAccessTokenConfig
+	prometheusConfig         config.Prometheus
+	loggerConfig             config.ZapLogger
 
 	tokenServiceConfig *config.TokenServiceConfig
 
@@ -151,6 +153,33 @@ func (s *serviceProvider) SwaggerConfig() config.Swagger {
 	}
 
 	return s.swaggerConfig
+}
+
+func (s *serviceProvider) PrometheusConfig() config.HTTP {
+	if s.prometheusConfig == nil {
+		cfg, err := env.NewPrometheusConfig()
+		if err != nil {
+			log.Fatalf("failed to get prometheus config: %s", err.Error())
+		}
+
+		s.prometheusConfig = cfg
+	}
+
+	return s.prometheusConfig
+}
+
+func (s *serviceProvider) LoggerConfig() config.ZapLogger {
+	if s.loggerConfig == nil {
+		cfg, err := env.NewZapLoggerConfig()
+		if err != nil {
+			log.Fatalf("failed to get logger config: %s", err.Error())
+		}
+
+		s.loggerConfig = cfg
+	}
+
+	return s.loggerConfig
+
 }
 
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {

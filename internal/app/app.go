@@ -3,24 +3,32 @@ package app
 import (
 	"context"
 	"flag"
-
 	"io"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/Shemistan/platform_common/pkg/closer"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/natefinch/lumberjack"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
 	"github.com/Shemistan/grpc_user_api/internal/config"
 	"github.com/Shemistan/grpc_user_api/internal/interceptor"
+	"github.com/Shemistan/grpc_user_api/internal/logger"
+	"github.com/Shemistan/grpc_user_api/internal/metric"
+	"github.com/Shemistan/grpc_user_api/internal/tracing"
 	descAccess "github.com/Shemistan/grpc_user_api/pkg/access_api_v1"
 	descAuth "github.com/Shemistan/grpc_user_api/pkg/auth_api_v1"
 	descUser "github.com/Shemistan/grpc_user_api/pkg/user_api_v1"
@@ -37,6 +45,8 @@ type App struct {
 }
 
 var configPath string
+
+const serviceName = "my_service"
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
@@ -90,6 +100,14 @@ func (a *App) Run() error {
 		}
 	}()
 
+	wg.Add(1)
+	go func() {
+		err := a.runPrometheus()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	wg.Wait()
 
 	return nil
@@ -99,10 +117,13 @@ func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initConfig,
 		a.initServiceProvider,
+		a.initLogger,
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
 		a.addActualValuesInCache,
+		a.initMetric,
+		a.initTracing,
 	}
 
 	for _, f := range inits {
@@ -151,7 +172,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	a.httpServer = &http.Server{
 		Addr:              a.serviceProvider.HTTPConfig().Address(),
 		Handler:           corsMiddleware.Handler(mux),
-		ReadHeaderTimeout: 10 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	return nil
@@ -179,7 +200,14 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+		grpc.UnaryInterceptor(
+			grpcMiddleware.ChainUnaryServer(
+				interceptor.LogInterceptor,
+				interceptor.ValidateInterceptor,
+				interceptor.MetricsInterceptor,
+				interceptor.ServerTracingInterceptor,
+			),
+		),
 	)
 
 	reflection.Register(a.grpcServer)
@@ -188,6 +216,26 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	descAccess.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessAPI(ctx))
 	descUser.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserAPI(ctx))
 
+	return nil
+}
+
+func (a *App) initLogger(_ context.Context) error {
+	logger.Init(a.getCore(a.getAtomicLevel()))
+	return nil
+}
+
+func (a *App) initMetric(ctx context.Context) error {
+	err := metric.Init(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// InitTracing - инициализация трейсинга
+func (a *App) initTracing(_ context.Context) error {
+	tracing.Init(logger.Logger(), serviceName)
 	return nil
 }
 
@@ -277,4 +325,60 @@ func (a *App) runGRPCServer() error {
 	}
 
 	return nil
+}
+
+func (a *App) runPrometheus() error {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	prometheusServer := &http.Server{
+		Addr:              a.serviceProvider.PrometheusConfig().Address(),
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
+	}
+
+	log.Printf("Prometheus server is running on %s", a.serviceProvider.PrometheusConfig().Address())
+
+	err := prometheusServer.ListenAndServe()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *App) getCore(level zap.AtomicLevel) zapcore.Core {
+	stdout := zapcore.AddSync(os.Stdout)
+
+	file := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   a.serviceProvider.LoggerConfig().FileName(),    // log file - имя файла
+		MaxSize:    a.serviceProvider.LoggerConfig().FileMaxSize(), // megabytes - максимальный размер файла
+		MaxBackups: a.serviceProvider.LoggerConfig().MaxBackups(),  // files - максимальное количество файлов
+		MaxAge:     a.serviceProvider.LoggerConfig().MaxAge(),      // days - максимальный возраст файла
+	})
+
+	productionCfg := zap.NewProductionEncoderConfig()
+	productionCfg.TimeKey = "timestamp"
+	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	developmentCfg := zap.NewDevelopmentEncoderConfig()
+	developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
+	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+
+	return zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, stdout, level),
+		zapcore.NewCore(fileEncoder, file, level),
+	)
+}
+
+func (a *App) getAtomicLevel() zap.AtomicLevel {
+	var level zapcore.Level
+
+	if err := level.Set(a.serviceProvider.LoggerConfig().LogLevel()); err != nil {
+		log.Fatalf("failed to set log level: %v", err)
+	}
+
+	return zap.NewAtomicLevelAt(level)
 }

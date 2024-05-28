@@ -65,3 +65,17 @@ type TokenServiceConfig struct {
 	RefreshTokenExpiration time.Duration
 	AccessTokenExpiration  time.Duration
 }
+
+// Prometheus конфиг
+type Prometheus interface {
+	Address() string
+}
+
+// ZapLogger конфиг
+type ZapLogger interface {
+	FileName() string
+	FileMaxSize() int
+	MaxBackups() int
+	MaxAge() int
+	LogLevel() string
+}

@@ -24,8 +24,8 @@ const (
 	columnEmail     = "email"
 	columnPassword  = "password"
 	columnID        = "id"
-	columnCreatedAt = "id"
-	columnUpdatedAt = "id"
+	columnCreatedAt = "created_at"
+	columnUpdatedAt = "updated_at"
 )
 
 // NewStorage - новый storage

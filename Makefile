@@ -148,3 +148,13 @@ grpc-load-test_2:
 		--total 3000 \
 		--insecure \
 		localhost:50051
+
+grpc-load-test_3:
+	ghz \
+		--proto api/user_api_v1/user_api.proto \
+		--call user_api_v1.UserV1.Get \
+		--data '{"id": 4}' \
+		--rps 100 \
+		--total 3000 \
+		--insecure \
+		localhost:50051
